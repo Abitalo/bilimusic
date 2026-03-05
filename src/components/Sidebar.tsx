@@ -1,0 +1,107 @@
+import { useState } from 'react'
+import { NavLink } from 'react-router-dom'
+import { Home, Search, Library, Clock, PlusCircle, List, Trash2 } from 'lucide-react'
+import { useAppStore } from '../hooks/useAppStore'
+import './Sidebar.css'
+
+// Updated navItems to use lucide-react icons
+const navItems = [
+  { path: '/', label: '首页', icon: Home },
+  { path: '/search', label: '搜索', icon: Search },
+  { path: '/library', label: '收藏库', icon: Library },
+  { path: '/history', label: '播放历史', icon: Clock },
+]
+
+export default function Sidebar() {
+  const { playlists, createPlaylist, deletePlaylist } = useAppStore()
+  const [isCreating, setIsCreating] = useState(false)
+  const [newPlaylistName, setNewPlaylistName] = useState('')
+
+  const handleCreateSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (newPlaylistName.trim()) {
+      await createPlaylist(newPlaylistName.trim())
+      setNewPlaylistName('')
+      setIsCreating(false)
+    }
+  }
+
+  return (
+    <aside className="sidebar glass-panel">
+      <div className="sidebar-header">
+        <div className="logo">
+          <span className="logo-icon">🎵</span>
+          <span className="logo-text">BiliMusic</span>
+        </div>
+      </div>
+
+      <nav className="sidebar-nav">
+        <div className="nav-section">
+          <div className="nav-section-title">菜单</div>
+          {navItems.map(item => (
+            <NavLink
+              key={item.path}
+              to={item.path}
+              className={({ isActive }) => `nav-item ${isActive ? 'active' : ''}`}
+            >
+              <item.icon size={20} className="nav-icon" />
+              <span className="nav-label">{item.label}</span>
+            </NavLink>
+          ))}
+        </div>
+
+        <div className="sidebar-divider" />
+
+        <div className="nav-section">
+          <div className="section-header">
+            <span className="nav-section-title">我的播放列表</span>
+            <button
+              className="add-list-btn"
+              title="新建列表"
+              onClick={() => setIsCreating(true)}
+            >
+              <PlusCircle size={18} />
+            </button>
+          </div>
+
+          {isCreating && (
+            <form className="create-playlist-form" onSubmit={handleCreateSubmit}>
+              <input
+                autoFocus
+                type="text"
+                placeholder="输入播放列表名称..."
+                value={newPlaylistName}
+                onChange={(e) => setNewPlaylistName(e.target.value)}
+                onBlur={() => { if (!newPlaylistName.trim()) setIsCreating(false) }}
+                className="create-playlist-input"
+              />
+            </form>
+          )}
+
+          <div className="playlist-collection">
+            {playlists.map(pl => (
+              <div key={pl.id} className="playlist-item">
+                <NavLink to={`/playlist/${pl.id}`} className={({ isActive }) => `playlist-link ${isActive ? 'active' : ''}`}>
+                  <List size={16} className="playlist-icon" />
+                  <span className="playlist-name">{pl.name}</span>
+                </NavLink>
+                <button
+                  className="delete-playlist-btn"
+                  title="删除列表"
+                  onClick={(e) => {
+                    e.preventDefault()
+                    if (confirm(`确定要删除播放列表 "${pl.name}" 吗？`)) {
+                      deletePlaylist(pl.id)
+                    }
+                  }}
+                >
+                  <Trash2 size={14} />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      </nav>
+    </aside>
+  )
+}

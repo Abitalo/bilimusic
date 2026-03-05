@@ -1,0 +1,101 @@
+:root {
+  /* Color Palette - Deep Dark Theme */
+  --bg-base: #0a0a0a;
+  --bg-surface: #141414;
+  --bg-elevated: #1e1e1e;
+  
+  --text-primary: #ffffff;
+  --text-secondary: #aaaaaa;
+  --text-tertiary: #666666;
+
+  /* Bilibili Pink for accents */
+  --accent-primary: #FB7299;
+  --accent-hover: #fc8bab;
+  
+  /* Layout Constants */
+  --sidebar-width: 240px;
+  --player-height: 90px;
+  --topbar-height: 64px;
+
+  /* Effects */
+  --glass-bg: rgba(20, 20, 20, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+  --blur-amount: blur(24px);
+  
+  --transition-fast: 0.15s ease;
+  --transition-normal: 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  background-color: var(--bg-base);
+  color: var(--text-primary);
+  overflow: hidden; /* App container handles scrolling */
+  user-select: none; /* Desktop app feel */
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bg-elevated);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-tertiary);
+}
+
+/* Glassmorphism Utilities */
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: var(--blur-amount);
+  -webkit-backdrop-filter: var(--blur-amount);
+  border: 1px solid var(--glass-border);
+}
+
+/* App Layout */
+.app-container {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - var(--player-height));
+  margin-left: var(--sidebar-width);
+}
+
+.page-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+/* Drag region for macOS frameless window */
+.drag-region {
+  -webkit-app-region: drag;
+  height: 32px;
+  width: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+}
+.no-drag {
+  -webkit-app-region: no-drag;
+}

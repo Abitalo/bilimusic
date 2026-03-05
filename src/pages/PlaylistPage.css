@@ -1,0 +1,246 @@
+.playlist-page {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding-bottom: 40px;
+}
+
+.playlist-header {
+    display: flex;
+    gap: 32px;
+    margin-bottom: 40px;
+    align-items: flex-end;
+}
+
+.header-cover {
+    width: 240px;
+    height: 240px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 16px 32px rgba(0, 0, 0, 0.3);
+    background: rgba(255, 255, 255, 0.05);
+    flex-shrink: 0;
+}
+
+.header-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.cover-empty {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-tertiary);
+}
+
+.header-info {
+    flex: 1;
+}
+
+.type-badge {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: inline-block;
+}
+
+.title {
+    font-size: 48px;
+    font-weight: 800;
+    margin-bottom: 16px;
+    line-height: 1.2;
+}
+
+.meta {
+    color: var(--text-secondary);
+    font-size: 14px;
+    margin-bottom: 24px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 16px;
+}
+
+.primary-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent-primary);
+    color: white;
+    border: none;
+    padding: 12px 32px;
+    border-radius: 30px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.primary-btn:hover:not(:disabled) {
+    transform: scale(1.02);
+    background: var(--accent-hover);
+}
+
+.primary-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: grayscale(1);
+}
+
+.secondary-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.secondary-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.05);
+}
+
+/* Track List Table */
+.track-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.track-header-row {
+    display: flex;
+    padding: 12px 16px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    border-bottom: 1px solid var(--glass-border);
+    margin-bottom: 8px;
+}
+
+.track-row {
+    display: flex;
+    padding: 8px 16px;
+    align-items: center;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.track-row:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.col-index {
+    width: 40px;
+    text-align: center;
+    color: var(--text-tertiary);
+    font-variant-numeric: tabular-nums;
+}
+
+.col-title {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    overflow: hidden;
+}
+
+.col-duration {
+    width: 80px;
+    text-align: right;
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+    padding-right: 16px;
+}
+
+.col-action {
+    width: 40px;
+    text-align: center;
+}
+
+.tiny-cover {
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.title-text {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.track-name {
+    font-size: 15px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.track-artist {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+
+.track-row:hover .track-name {
+    color: var(--accent-primary);
+}
+
+.remove-track-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    opacity: 0;
+    padding: 8px;
+    border-radius: 50%;
+    transition: all var(--transition-fast);
+}
+
+.track-row:hover .remove-track-btn {
+    opacity: 1;
+}
+
+.remove-track-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: #ff6b6b;
+    transform: scale(1.1);
+}
+
+.empty-tracks {
+    text-align: center;
+    padding: 80px;
+}
+
+.empty-tracks p {
+    color: var(--text-secondary);
+    margin-bottom: 24px;
+}
+
+.go-search-btn {
+    background: var(--bg-surface);
+    border: 1px solid var(--glass-border);
+    color: white;
+    padding: 10px 24px;
+    border-radius: 20px;
+    cursor: pointer;
+}
+
+.go-search-btn:hover {
+    border-color: var(--accent-primary);
+}
