@@ -1,37 +1,121 @@
+import { useState, useEffect } from 'react'
+import { Play } from 'lucide-react'
+import type { Track } from '../types'
 import './HomePage.css'
 
-export default function HomePage() {
+interface FeedItem {
+    bvid: string
+    title: string
+    author: string
+    pic: string
+    duration: number
+    play: number
+}
+
+interface HomePageProps {
+    onPlayTrack: (t: Track) => void
+}
+
+export default function HomePage({ onPlayTrack }: HomePageProps) {
+    const [feed, setFeed] = useState<FeedItem[]>([])
+    const [loading, setLoading] = useState(true)
+
+    useEffect(() => {
+        const loadFeed = async () => {
+            try {
+                const res = await (window as any).ipcRenderer.invoke('get-recommend-feed')
+                const items: FeedItem[] = []
+
+                // Parse dynamic/region format
+                if (res?.data?.archives) {
+                    res.data.archives.forEach((a: any) => {
+                        items.push({
+                            bvid: a.bvid,
+                            title: a.title,
+                            author: a.owner?.name || '未知UP主',
+                            pic: a.pic,
+                            duration: a.duration || 0,
+                            play: a.stat?.view || 0
+                        })
+                    })
+                } else if (res?.data?.item) {
+                    // Parse top rcmd format
+                    res.data.item.forEach((a: any) => {
+                        items.push({
+                            bvid: a.bvid,
+                            title: a.title,
+                            author: a.owner?.name || '未知UP主',
+                            pic: a.pic,
+                            duration: a.duration || 0,
+                            play: a.stat?.view || 0
+                        })
+                    })
+                }
+                setFeed(items)
+            } catch (err) {
+                console.error('Failed to load feed', err)
+            } finally {
+                setLoading(false)
+            }
+        }
+        loadFeed()
+    }, [])
+
+    const handlePlayCard = async (item: FeedItem) => {
+        try {
+            const detailRes = await (window as any).ipcRenderer.invoke('get-video-detail', item.bvid)
+            let cid = detailRes?.data?.cid || detailRes?.data?.pages?.[0]?.cid
+            if (!cid) {
+                const pageListRes = await (window as any).ipcRenderer.invoke('get-page-list', item.bvid)
+                cid = pageListRes?.data?.[0]?.cid
+            }
+            if (!cid) {
+                alert('播放失败: 无法获取该推荐视频的 cid。')
+                return
+            }
+
+            const track: Track = {
+                bvid: item.bvid,
+                cid,
+                title: item.title,
+                artist: item.author,
+                cover: item.pic,
+                duration: item.duration || 0,
+                addedAt: Date.now()
+            }
+
+            onPlayTrack(track)
+        } catch (e) {
+            console.error(e)
+        }
+    }
+
     return (
         <div className="home-page">
-            <section className="hero-section">
-                <div className="hero-bg" />
-                <div className="hero-content">
-                    <h1 className="hero-title">🎵 BiliMusic</h1>
-                    <p className="hero-subtitle">从 Bilibili 发现并播放你喜爱的音乐</p>
-                    <p className="hero-hint">使用顶部搜索栏开始搜索</p>
-                </div>
-            </section>
+            <h2 className="home-greeting">为您推荐</h2>
 
-            <section className="section">
-                <h2 className="section-title">快速开始</h2>
-                <div className="quick-start-cards">
-                    <div className="quick-card">
-                        <span className="quick-card-icon">🔍</span>
-                        <h3>搜索音乐</h3>
-                        <p>在搜索栏输入歌曲名称、歌手或关键词</p>
-                    </div>
-                    <div className="quick-card">
-                        <span className="quick-card-icon">▶️</span>
-                        <h3>后台播放</h3>
-                        <p>仅播放音频，无需加载视频画面</p>
-                    </div>
-                    <div className="quick-card">
-                        <span className="quick-card-icon">📋</span>
-                        <h3>创建列表</h3>
-                        <p>自建播放列表，管理你的音乐收藏</p>
-                    </div>
+            {loading ? (
+                <div className="home-loading">
+                    <div className="spinner"></div>
                 </div>
-            </section>
+            ) : feed.length === 0 ? (
+                <div className="home-empty">暂无推荐内容</div>
+            ) : (
+                <div className="feed-grid">
+                    {feed.map(item => (
+                        <div key={item.bvid} className="feed-card" onClick={() => handlePlayCard(item)}>
+                            <div className="feed-cover-container">
+                                <img src={item.pic} alt={item.title} className="feed-cover" crossOrigin="anonymous" />
+                                <button className="feed-play-btn">
+                                    <Play size={24} fill="currentColor" />
+                                </button>
+                            </div>
+                            <h3 className="feed-title">{item.title}</h3>
+                            <p className="feed-author">{item.author}</p>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     )
 }

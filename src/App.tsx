@@ -22,6 +22,7 @@ function App() {
   const [isPlaying, setIsPlaying] = useState(false)
   const [isShuffle, setIsShuffle] = useState(false)
   const [isDrawerOpen, setIsDrawerOpen] = useState(false)
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
   const audioRef = useRef<HTMLAudioElement>(null)
 
   const { addToHistory } = useAppStore()
@@ -164,19 +165,22 @@ function App() {
 
   return (
     <HashRouter>
-      <div className="app-container">
+      <div className={`app-container ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
         <div className="drag-region" />
-        <Sidebar />
+        <Sidebar
+          isCollapsed={isSidebarCollapsed}
+          onToggle={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+        />
 
         <main className="main-content">
           <TopBar />
           <div className="page-container">
             <Routes>
-              <Route path="/" element={<HomePage />} />
+              <Route path="/" element={<HomePage onPlayTrack={handlePlayTrack} />} />
               <Route path="/search" element={<SearchPage onPlayTrack={handlePlayTrack} onPlayNext={handlePlayNext} />} />
               <Route path="/library" element={<LibraryPage />} />
               <Route path="/playlist/:id" element={<PlaylistPage onPlayTrack={handlePlayTrack} />} />
-              <Route path="/history" element={<HistoryPage />} />
+              <Route path="/history" element={<HistoryPage onPlayTrack={handlePlayTrack} />} />
             </Routes>
           </div>
         </main>

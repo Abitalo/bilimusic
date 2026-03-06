@@ -123,12 +123,30 @@ export function useAppStore() {
         await (window as any).ipcRenderer.invoke('store-set', 'playlists', newPlaylists)
     }
 
+    const removeTrackFromPlaylist = async (playlistId: string, bvid: string) => {
+        const newPlaylists = playlists.map(p => {
+            if (p.id === playlistId) {
+                const newTracks = p.tracks.filter(t => t.bvid !== bvid)
+                return {
+                    ...p,
+                    tracks: newTracks,
+                    updatedAt: Date.now(),
+                    cover: newTracks.length > 0 ? newTracks[0].cover : undefined
+                }
+            }
+            return p
+        })
+        setPlaylists(newPlaylists)
+        await (window as any).ipcRenderer.invoke('store-set', 'playlists', newPlaylists)
+    }
+
     return {
         playlists,
         history,
         createPlaylist,
         deletePlaylist,
         addTrackToPlaylist,
+        removeTrackFromPlaylist,
         addToHistory,
         toggleLikeTrack,
         isTrackLiked

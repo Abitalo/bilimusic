@@ -12,7 +12,7 @@ interface PlaylistPageProps {
 export default function PlaylistPage({ onPlayTrack }: PlaylistPageProps) {
     const { id } = useParams<{ id: string }>()
     const navigate = useNavigate()
-    const { playlists, deletePlaylist } = useAppStore()
+    const { playlists, deletePlaylist, removeTrackFromPlaylist } = useAppStore()
 
     const playlist = useMemo(() => playlists.find(p => p.id === id), [playlists, id])
 
@@ -27,7 +27,7 @@ export default function PlaylistPage({ onPlayTrack }: PlaylistPageProps) {
 
     const handlePlayAll = () => {
         if (playlist.tracks.length > 0) {
-            onPlayTrack(playlist.tracks[0], playlist.tracks)
+            handlePlayTrack(playlist.tracks[0], playlist.tracks)
         }
     }
 
@@ -38,10 +38,35 @@ export default function PlaylistPage({ onPlayTrack }: PlaylistPageProps) {
         }
     }
 
-    const handleDeleteTrack = (_trackId: string, e: React.MouseEvent) => {
+    const handleDeleteTrack = async (trackBvid: string, e: React.MouseEvent) => {
         e.stopPropagation()
-        // In a full implementation we'd add removeTrackFromPlaylist to useAppStore
-        alert('开发中: 删除单曲')
+        if (confirm('确定要从列表中移除这首歌曲吗？')) {
+            await removeTrackFromPlaylist(playlist.id, trackBvid)
+        }
+    }
+
+    const handlePlayTrack = async (targetTrack: Track, queue?: Track[]) => {
+        let playableTrack = { ...targetTrack }
+        if (!playableTrack.cid) {
+            try {
+                const detailRes = await (window as any).ipcRenderer.invoke('get-video-detail', playableTrack.bvid)
+                let cid = detailRes?.data?.cid || detailRes?.data?.pages?.[0]?.cid
+                if (!cid) {
+                    const pageListRes = await (window as any).ipcRenderer.invoke('get-page-list', playableTrack.bvid)
+                    cid = pageListRes?.data?.[0]?.cid
+                }
+                if (cid) {
+                    playableTrack.cid = cid
+                } else {
+                    alert('播放失败: 由于B站接口限制，该结果无法播放。')
+                    return
+                }
+            } catch (err) {
+                console.error('Failed to get cid for playback', err)
+                return
+            }
+        }
+        onPlayTrack(playableTrack, queue)
     }
 
     return (
@@ -93,7 +118,7 @@ export default function PlaylistPage({ onPlayTrack }: PlaylistPageProps) {
                             <div
                                 key={`${track.bvid}-${idx}`}
                                 className="track-row"
-                                onClick={() => onPlayTrack(track, playlist.tracks)}
+                                onClick={() => handlePlayTrack(track, playlist.tracks)}
                             >
                                 <div className="col-index">{idx + 1}</div>
                                 <div className="col-title">

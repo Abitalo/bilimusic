@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
-import { Home, Search, Library, Clock, PlusCircle, List, Trash2, Heart } from 'lucide-react'
+import { Home, Search, Library, Clock, PlusCircle, List, Trash2, Heart, Menu } from 'lucide-react'
 import { useAppStore } from '../hooks/useAppStore'
+import homeLogo from '../assets/home_logo.png'
 import './Sidebar.css'
 
 // Updated navItems to use lucide-react icons
@@ -12,7 +13,12 @@ const navItems = [
   { path: '/history', label: '播放历史', icon: Clock },
 ]
 
-export default function Sidebar() {
+interface SidebarProps {
+  isCollapsed: boolean
+  onToggle: () => void
+}
+
+export default function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
   const { playlists, createPlaylist, deletePlaylist } = useAppStore()
   const [isCreating, setIsCreating] = useState(false)
   const [newPlaylistName, setNewPlaylistName] = useState('')
@@ -27,17 +33,23 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="sidebar">
+    <aside className={`sidebar ${isCollapsed ? 'collapsed' : ''}`}>
       <div className="sidebar-header">
-        <div className="logo">
-          <span className="logo-icon">🎵</span>
-          <span className="logo-text">BiliMusic</span>
-        </div>
+        <button className="collapse-btn" onClick={onToggle}>
+          <Menu size={20} />
+        </button>
+        {!isCollapsed && (
+          <div className="logo">
+            <div className="logo-art">
+              <img src={homeLogo} alt="BiliMusic" className="logo-image" />
+            </div>
+          </div>
+        )}
       </div>
 
       <nav className="sidebar-nav">
         <div className="nav-section">
-          <div className="nav-section-title">菜单</div>
+          {!isCollapsed && <div className="nav-section-title">菜单</div>}
           {navItems.map(item => (
             <NavLink
               key={item.path}
@@ -54,11 +66,14 @@ export default function Sidebar() {
 
         <div className="nav-section">
           <div className="section-header">
-            <span className="nav-section-title">我的播放列表</span>
+            {!isCollapsed && <span className="nav-section-title">我的播放列表</span>}
             <button
               className="add-list-btn"
               title="新建列表"
-              onClick={() => setIsCreating(true)}
+              onClick={() => {
+                if (isCollapsed) onToggle()
+                setIsCreating(true)
+              }}
             >
               <PlusCircle size={18} />
             </button>
@@ -87,7 +102,7 @@ export default function Sidebar() {
                   ) : (
                     <List size={16} className="playlist-icon" />
                   )}
-                  <span className="playlist-name">{pl.name}</span>
+                  <span className="playlist-name" style={{ display: isCollapsed ? 'none' : 'block' }}>{pl.name}</span>
                 </NavLink>
                 {pl.id !== 'liked' && (
                   <button

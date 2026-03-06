@@ -1,8 +1,13 @@
 import { useAppStore } from '../hooks/useAppStore'
+import type { Track } from '../types'
 import './LibraryPage.css'
 import './PlaylistPage.css' // Reuse list styling
 
-export default function HistoryPage() {
+interface HistoryPageProps {
+    onPlayTrack: (t: Track) => void
+}
+
+export default function HistoryPage({ onPlayTrack }: HistoryPageProps) {
     const { history } = useAppStore()
 
     const formatDuration = (seconds: number) => {
@@ -35,7 +40,7 @@ export default function HistoryPage() {
                         <div className="col-duration">时间</div>
                     </div>
                     {history.map((track, idx) => (
-                        <div key={`${track.bvid}-${track.addedAt}-${idx}`} className="track-row">
+                        <div key={`${track.bvid}-${track.addedAt}-${idx}`} className="track-row" onClick={() => onPlayTrack(track)}>
                             <div className="col-index">{idx + 1}</div>
                             <div className="col-title">
                                 <img src={track.cover} alt={track.title} className="tiny-cover" crossOrigin="anonymous" />

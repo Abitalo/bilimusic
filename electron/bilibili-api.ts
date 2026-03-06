@@ -164,3 +164,21 @@ export function logout() {
     store.delete('bili_cookie');
     return { code: 0, message: 'Success' };
 }
+
+export async function getRecommendFeed() {
+    // Attempt to get dynamic region 3 (music) or top rcmd based on Bilibili dynamic feed api
+    try {
+        const res = await biliClient.get('https://api.bilibili.com/x/web-interface/dynamic/region', {
+            params: { ps: 12, rid: 3 }
+        });
+        if (res.data.code === 0 && res.data.data?.archives) {
+            return res.data;
+        }
+    } catch (e) { }
+
+    // Fallback to top recommend feed
+    const res = await biliClient.get('https://api.bilibili.com/x/web-interface/index/top/rcmd', {
+        params: { fresh_type: 3, version: 1, ps: 12 }
+    });
+    return res.data;
+}

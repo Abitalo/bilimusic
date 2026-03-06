@@ -11,25 +11,54 @@
 }
 
 .sidebar-header {
-    padding: 20px 20px 12px;
+    padding: 28px 20px 10px;
     -webkit-app-region: drag;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.collapse-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    padding: 4px;
+    transition: all var(--transition-fast);
+    -webkit-app-region: no-drag;
+}
+
+.collapse-btn:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.1);
 }
 
 .logo {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding-top: 10px;
+    flex: 1;
+    min-width: 0;
+    height: 72px;
 }
 
-.logo-icon {
-    font-size: 28px;
+.logo-art {
+    width: 196px;
+    height: 72px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
 }
 
-.logo-text {
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--text-primary);
+.logo-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 43%;
+    display: block;
 }
 
 .sidebar-nav {
@@ -65,6 +94,40 @@
     border-radius: 8px;
     transition: all var(--transition-fast);
     text-align: left;
+}
+
+/* Collapsed styles */
+.sidebar.collapsed {
+    align-items: center;
+}
+
+.sidebar.collapsed .sidebar-header {
+    padding: 28px 0 10px 0;
+    justify-content: center;
+    width: 100%;
+}
+
+.sidebar.collapsed .nav-item {
+    justify-content: center;
+    padding: 10px;
+}
+
+.sidebar.collapsed .nav-label {
+    display: none;
+}
+
+.sidebar.collapsed .playlist-collection {
+    align-items: center;
+}
+
+.sidebar.collapsed .playlist-link {
+    justify-content: center;
+    padding: 10px;
+}
+
+.sidebar.collapsed .section-header {
+    justify-content: center;
+    padding: 0;
 }
 
 .nav-item:hover {
@@ -160,7 +223,7 @@
     display: flex;
     align-items: center;
     gap: 10px;
-    padding: 8px 12px;
+    padding: 8px;
     border-radius: 8px;
     color: var(--text-secondary);
     text-decoration: none;

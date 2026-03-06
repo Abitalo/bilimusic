@@ -1,5 +1,5 @@
 import { ipcMain } from 'electron';
-import { searchBilibili, getPlayUrl, getVideoDetail, getPageList, getLoginUrl, pollLogin, getUserInfo, logout } from './bilibili-api';
+import { searchBilibili, getPlayUrl, getVideoDetail, getPageList, getLoginUrl, pollLogin, getUserInfo, logout, getRecommendFeed } from './bilibili-api';
 import store from './store';
 
 function getErrorMessage(err: unknown) {
@@ -39,6 +39,15 @@ export function setupIpcHandlers() {
             return await getPageList(bvid);
         } catch (err: any) {
             console.error('PageList error:', err);
+            return { code: -1, message: err?.message };
+        }
+    });
+
+    ipcMain.handle('get-recommend-feed', async () => {
+        try {
+            return await getRecommendFeed();
+        } catch (err: any) {
+            console.error('RecommendFeed error:', err);
             return { code: -1, message: err?.message };
         }
     });

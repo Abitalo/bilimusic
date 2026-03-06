@@ -1,4 +1,5 @@
 import { app, BrowserWindow, session } from 'electron'
+import { existsSync } from 'node:fs'
 import { join, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { setupIpcHandlers } from './ipc-handlers'
@@ -20,6 +21,15 @@ if (!isDev && !app.requestSingleInstanceLock()) {
 }
 
 let win: BrowserWindow | null = null
+
+function setDevelopmentDockIcon() {
+    if (process.platform !== 'darwin' || !isDev) return
+
+    const dockIconPath = join(__dirname, '../build/icons/icon.png')
+    if (existsSync(dockIconPath) && app.dock) {
+        app.dock.setIcon(dockIconPath)
+    }
+}
 
 async function createWindow() {
     win = new BrowserWindow({
@@ -61,6 +71,7 @@ async function createWindow() {
 }
 
 app.whenReady().then(() => {
+    setDevelopmentDockIcon()
     setupIpcHandlers()
     startAudioProxy()
 

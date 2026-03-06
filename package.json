@@ -14,12 +14,16 @@
     "appId": "com.bilimusic.app",
     "productName": "BiliMusic",
     "directories": {
-      "output": "release/${version}"
+      "output": "release/${version}",
+      "buildResources": "build"
     },
+    "icon": "build/icons/icon.png",
     "mac": {
-      "category": "public.app-category.music"
+      "category": "public.app-category.music",
+      "icon": "build/icons/icon.png"
     },
     "win": {
+      "icon": "build/icons/icon.png",
       "target": [
         "nsis"
       ]
