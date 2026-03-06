@@ -14,7 +14,7 @@
 .hero-bg {
     position: absolute;
     inset: 0;
-    background: linear-gradient(135deg, rgba(251, 114, 153, 0.2) 0%, rgba(80, 50, 120, 0.3) 50%, rgba(20, 20, 40, 0.8) 100%);
+    background: linear-gradient(135deg, rgba(29, 185, 84, 0.4) 0%, var(--bg-base) 100%);
     z-index: 0;
 }
 
@@ -28,7 +28,7 @@
     font-size: 48px;
     font-weight: 800;
     margin-bottom: 12px;
-    background: linear-gradient(135deg, #fff 0%, var(--accent-primary) 100%);
+    background: linear-gradient(135deg, #fff 0%, var(--accent-green) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -62,19 +62,17 @@
 }
 
 .quick-card {
-    background: var(--bg-surface);
-    border: 1px solid var(--glass-border);
-    border-radius: 12px;
+    background: var(--bg-elevated);
+    border: none;
+    border-radius: 8px;
     padding: 24px;
     text-align: center;
-    transition: all var(--transition-normal);
+    transition: all var(--transition-fast);
     cursor: default;
 }
 
 .quick-card:hover {
-    border-color: var(--accent-primary);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px rgba(251, 114, 153, 0.1);
+    background: var(--bg-hover);
 }
 
 .quick-card-icon {

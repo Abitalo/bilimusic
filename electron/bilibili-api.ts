@@ -111,7 +111,23 @@ export async function getPlayUrl(bvid: string, cid: number, qn = 16) {
 }
 
 export async function getVideoDetail(bvid: string) {
+    // Some videos are heavily protected, try WBI endpoint first
+    try {
+        const queryStr = await encWbi({ bvid });
+        const res = await biliClient.get(`https://api.bilibili.com/x/web-interface/wbi/view?${queryStr}`);
+        if (res.data.code === 0) return res.data;
+    } catch (e) { }
+
+    // Fallback to normal view API, or we could also try pagelist since we mostly just want cid
     const res = await biliClient.get('https://api.bilibili.com/x/web-interface/view', {
+        params: { bvid }
+    });
+    return res.data;
+}
+
+// Just in case view API fails completely, exporting pagelist to easily get cid
+export async function getPageList(bvid: string) {
+    const res = await biliClient.get('https://api.bilibili.com/x/player/pagelist', {
         params: { bvid }
     });
     return res.data;

@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
-import { Home, Search, Library, Clock, PlusCircle, List, Trash2 } from 'lucide-react'
+import { Home, Search, Library, Clock, PlusCircle, List, Trash2, Heart } from 'lucide-react'
 import { useAppStore } from '../hooks/useAppStore'
 import './Sidebar.css'
 
@@ -27,7 +27,7 @@ export default function Sidebar() {
   }
 
   return (
-    <aside className="sidebar glass-panel">
+    <aside className="sidebar">
       <div className="sidebar-header">
         <div className="logo">
           <span className="logo-icon">🎵</span>
@@ -82,21 +82,27 @@ export default function Sidebar() {
             {playlists.map(pl => (
               <div key={pl.id} className="playlist-item">
                 <NavLink to={`/playlist/${pl.id}`} className={({ isActive }) => `playlist-link ${isActive ? 'active' : ''}`}>
-                  <List size={16} className="playlist-icon" />
+                  {pl.id === 'liked' ? (
+                    <Heart size={16} className="playlist-icon" style={{ fill: 'var(--accent-primary)', color: 'var(--accent-primary)' }} />
+                  ) : (
+                    <List size={16} className="playlist-icon" />
+                  )}
                   <span className="playlist-name">{pl.name}</span>
                 </NavLink>
-                <button
-                  className="delete-playlist-btn"
-                  title="删除列表"
-                  onClick={(e) => {
-                    e.preventDefault()
-                    if (confirm(`确定要删除播放列表 "${pl.name}" 吗？`)) {
-                      deletePlaylist(pl.id)
-                    }
-                  }}
-                >
-                  <Trash2 size={14} />
-                </button>
+                {pl.id !== 'liked' && (
+                  <button
+                    className="delete-playlist-btn"
+                    title="删除列表"
+                    onClick={(e) => {
+                      e.preventDefault()
+                      if (confirm(`确定要删除播放列表 "${pl.name}" 吗？`)) {
+                        deletePlaylist(pl.id)
+                      }
+                    }}
+                  >
+                    <Trash2 size={14} />
+                  </button>
+                )}
               </div>
             ))}
           </div>

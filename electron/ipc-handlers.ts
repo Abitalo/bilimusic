@@ -1,5 +1,5 @@
 import { ipcMain } from 'electron';
-import { searchBilibili, getPlayUrl, getVideoDetail, getLoginUrl, pollLogin, getUserInfo, logout } from './bilibili-api';
+import { searchBilibili, getPlayUrl, getVideoDetail, getPageList, getLoginUrl, pollLogin, getUserInfo, logout } from './bilibili-api';
 import store from './store';
 
 function getErrorMessage(err: unknown) {
@@ -30,6 +30,15 @@ export function setupIpcHandlers() {
             return await getVideoDetail(bvid);
         } catch (err: any) {
             console.error('VideoDetail error:', err);
+            return { code: -1, message: err?.message };
+        }
+    });
+
+    ipcMain.handle('get-page-list', async (_, bvid: string) => {
+        try {
+            return await getPageList(bvid);
+        } catch (err: any) {
+            console.error('PageList error:', err);
             return { code: -1, message: err?.message };
         }
     });

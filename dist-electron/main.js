@@ -137,7 +137,15 @@ async function getPlayUrl(bvid, cid, qn = 16) {
 	} })).data;
 }
 async function getVideoDetail(bvid) {
+	try {
+		const queryStr = await encWbi({ bvid });
+		const res = await biliClient.get(`https://api.bilibili.com/x/web-interface/wbi/view?${queryStr}`);
+		if (res.data.code === 0) return res.data;
+	} catch (e) {}
 	return (await biliClient.get("https://api.bilibili.com/x/web-interface/view", { params: { bvid } })).data;
+}
+async function getPageList(bvid) {
+	return (await biliClient.get("https://api.bilibili.com/x/player/pagelist", { params: { bvid } })).data;
 }
 async function getLoginUrl() {
 	return (await biliClient.get("https://passport.bilibili.com/x/passport-login/web/qrcode/generate")).data;
@@ -192,6 +200,17 @@ function setupIpcHandlers() {
 			return await getVideoDetail(bvid);
 		} catch (err) {
 			console.error("VideoDetail error:", err);
+			return {
+				code: -1,
+				message: err?.message
+			};
+		}
+	});
+	ipcMain.handle("get-page-list", async (_, bvid) => {
+		try {
+			return await getPageList(bvid);
+		} catch (err) {
+			console.error("PageList error:", err);
 			return {
 				code: -1,
 				message: err?.message

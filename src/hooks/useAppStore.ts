@@ -22,7 +22,22 @@ export function useAppStore() {
     const loadData = async () => {
         try {
             const pl = await (window as any).ipcRenderer.invoke('store-get', 'playlists')
-            setPlaylists(pl || [])
+            let loadedPlaylists: Playlist[] = pl || []
+
+            // Ensure 'liked' playlist exists (Built-in Liked Songs)
+            if (!loadedPlaylists.find(p => p.id === 'liked')) {
+                const likedList: Playlist = {
+                    id: 'liked',
+                    name: '我喜欢的音乐',
+                    tracks: [],
+                    createdAt: Date.now(),
+                    updatedAt: Date.now()
+                }
+                loadedPlaylists = [likedList, ...loadedPlaylists]
+                await (window as any).ipcRenderer.invoke('store-set', 'playlists', loadedPlaylists)
+            }
+
+            setPlaylists(loadedPlaylists)
 
             const hist = await (window as any).ipcRenderer.invoke('store-get', 'history')
             setHistory(hist || [])
@@ -79,12 +94,43 @@ export function useAppStore() {
         })
     }
 
+    const isTrackLiked = (bvid: string) => {
+        const likedList = playlists.find(p => p.id === 'liked')
+        return likedList?.tracks.some(t => t.bvid === bvid) || false
+    }
+
+    const toggleLikeTrack = async (track: Track) => {
+        const likedList = playlists.find(p => p.id === 'liked')
+        if (!likedList) return
+
+        const isLiked = likedList.tracks.some(t => t.bvid === track.bvid)
+        const newPlaylists = playlists.map(p => {
+            if (p.id === 'liked') {
+                const newTracks = isLiked
+                    ? p.tracks.filter(t => t.bvid !== track.bvid)
+                    : [...p.tracks, track]
+
+                return {
+                    ...p,
+                    tracks: newTracks,
+                    updatedAt: Date.now(),
+                    cover: isLiked ? p.cover : (p.cover || track.cover)
+                }
+            }
+            return p
+        })
+        setPlaylists(newPlaylists)
+        await (window as any).ipcRenderer.invoke('store-set', 'playlists', newPlaylists)
+    }
+
     return {
         playlists,
         history,
         createPlaylist,
         deletePlaylist,
         addTrackToPlaylist,
-        addToHistory
+        addToHistory,
+        toggleLikeTrack,
+        isTrackLiked
     }
 }

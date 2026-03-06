@@ -1,4 +1,15 @@
 import { useState, useRef, useEffect } from 'react'
+import {
+    SkipBack,
+    Play,
+    Pause,
+    SkipForward,
+    Shuffle,
+    Volume2,
+    VolumeX,
+    Volume1,
+    ListMusic
+} from 'lucide-react'
 import type { Track } from '../types'
 import './PlayerBar.css'
 
@@ -9,6 +20,9 @@ interface PlayerBarProps {
     onNext: () => void
     onPrev: () => void
     audioRef: React.RefObject<HTMLAudioElement | null>
+    isShuffle: boolean
+    onToggleShuffle: () => void
+    onToggleDrawer: () => void
 }
 
 export default function PlayerBar({
@@ -17,7 +31,10 @@ export default function PlayerBar({
     onPlayPause,
     onNext,
     onPrev,
-    audioRef
+    audioRef,
+    isShuffle,
+    onToggleShuffle,
+    onToggleDrawer
 }: PlayerBarProps) {
     const [currentTime, setCurrentTime] = useState(0)
     const [duration, setDuration] = useState(0)
@@ -66,9 +83,14 @@ export default function PlayerBar({
 
     const progress = duration > 0 ? (currentTime / duration) * 100 : 0
 
+    // Volume Icon logic
+    let VolIcon = Volume2
+    if (volume === 0) VolIcon = VolumeX
+    else if (volume < 0.5) VolIcon = Volume1
+
     return (
-        <footer className="player-bar glass-panel">
-            {/* Progress bar at top of player */}
+        <footer className="player-bar">
+            {/* Progress bar at very top edge */}
             <div
                 className="progress-bar-container"
                 ref={progressRef}
@@ -79,10 +101,7 @@ export default function PlayerBar({
                         className="progress-bar-fill"
                         style={{ width: `${progress}%` }}
                     />
-                    <div
-                        className="progress-bar-thumb"
-                        style={{ left: `${progress}%` }}
-                    />
+                    <div className="progress-bar-thumb" />
                 </div>
             </div>
 
@@ -110,29 +129,50 @@ export default function PlayerBar({
                 </div>
 
                 {/* Center: Controls */}
-                <div className="player-controls">
-                    <button className="ctrl-btn" onClick={onPrev} title="上一首">⏮</button>
-                    <button className="ctrl-btn play-btn" onClick={onPlayPause} title={isPlaying ? '暂停' : '播放'}>
-                        {isPlaying ? '⏸' : '▶️'}
-                    </button>
-                    <button className="ctrl-btn" onClick={onNext} title="下一首">⏭</button>
-                    <span className="time-display">
-                        {formatTime(currentTime)} / {formatTime(duration)}
-                    </span>
+                <div className="player-controls-container">
+                    <div className="player-controls">
+                        <button
+                            className={`ctrl-btn ${isShuffle ? 'active-green' : ''}`}
+                            onClick={onToggleShuffle}
+                            title="随机播放"
+                        >
+                            <Shuffle size={18} />
+                        </button>
+                        <button className="ctrl-btn" onClick={onPrev} title="上一首">
+                            <SkipBack size={20} fill="currentColor" />
+                        </button>
+                        <button className="play-btn" onClick={onPlayPause} title={isPlaying ? '暂停' : '播放'}>
+                            {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" style={{ marginLeft: '2px' }} />}
+                        </button>
+                        <button className="ctrl-btn" onClick={onNext} title="下一首">
+                            <SkipForward size={20} fill="currentColor" />
+                        </button>
+                        <span style={{ width: 34 }}></span> {/* Spacer to keep play button centered */}
+                    </div>
+                    <div className="time-display-wrapper">
+                        <span className="time-display">{formatTime(currentTime)}</span>
+                        <div className="time-display-divider">/</div>
+                        <span className="time-display">{formatTime(duration)}</span>
+                    </div>
                 </div>
 
-                {/* Right: Volume */}
-                <div className="player-volume">
-                    <span className="volume-icon">{volume === 0 ? '🔇' : volume < 0.5 ? '🔉' : '🔊'}</span>
-                    <input
-                        type="range"
-                        className="volume-slider"
-                        min={0}
-                        max={1}
-                        step={0.01}
-                        value={volume}
-                        onChange={handleVolumeChange}
-                    />
+                {/* Right: Actions */}
+                <div className="player-actions">
+                    <button className="action-icn-btn" title="播放队列" onClick={onToggleDrawer}>
+                        <ListMusic size={18} />
+                    </button>
+                    <div className="player-volume">
+                        <VolIcon size={18} className="volume-icon" />
+                        <input
+                            type="range"
+                            className="volume-slider"
+                            min={0}
+                            max={1}
+                            step={0.01}
+                            value={volume}
+                            onChange={handleVolumeChange}
+                        />
+                    </div>
                 </div>
             </div>
         </footer>

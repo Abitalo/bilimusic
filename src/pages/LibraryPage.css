@@ -20,14 +20,14 @@
 }
 
 .title-icon {
-    color: var(--accent-primary);
+    color: var(--accent-green);
 }
 
 .create-btn {
     display: flex;
     align-items: center;
     gap: 8px;
-    background: var(--accent-primary);
+    background: var(--accent-green);
     color: white;
     border: none;
     padding: 10px 20px;
@@ -39,8 +39,8 @@
 }
 
 .create-btn:hover {
-    background: var(--accent-hover);
-    transform: scale(1.02);
+    background: var(--accent-green-hover);
+    transform: scale(1.04);
 }
 
 .empty-state {
@@ -77,9 +77,9 @@
 }
 
 .playlist-card {
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid var(--glass-border);
-    border-radius: 12px;
+    background: var(--bg-surface);
+    border: none;
+    border-radius: 8px;
     padding: 16px;
     text-decoration: none;
     color: inherit;
@@ -89,9 +89,7 @@
 }
 
 .playlist-card:hover {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.1);
-    transform: translateY(-4px);
+    background: var(--bg-elevated);
 }
 
 .playlist-cover {

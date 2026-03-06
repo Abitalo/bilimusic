@@ -37,7 +37,7 @@ export default function TopBar() {
     }
 
     return (
-        <header className="topbar glass-panel">
+        <header className="topbar">
             <div className="topbar-left">
                 {/* Spacer for macOS traffic lights */}
             </div>
