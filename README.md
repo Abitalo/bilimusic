@@ -1,93 +1,86 @@
 <div align="center">
-  <img src="public/vite.svg" alt="Logo" width="120" height="auto" />
-  <h1>🎵 BiliMusic</h1>
-  <p><strong>A Cross-Platform Bilibili Audio Player Built with Vibe Coding</strong></p>
-  
+  <img src="public/vite.svg" alt="BiliMusic Logo" width="100" />
+  <h1>BiliMusic</h1>
+  <p><strong>A high-performance, minimalist Bilibili audio player for desktop.</strong></p>
+
   <p>
-    <a href="#features">Features</a> • 
-    <a href="#screenshots">Screenshots</a> • 
-    <a href="#installation">Installation</a> • 
-    <a href="#architecture">Architecture</a> 
+    <img src="https://img.shields.io/github/v/release/Abitalo/bilimusic?style=flat-square" alt="Release" />
+    <img src="https://img.shields.io/github/license/Abitalo/bilimusic?style=flat-square" alt="License" />
+    <img src="https://img.shields.io/badge/Platform-macOS%20%7C%20Windows-blue?style=flat-square" alt="Platform" />
+    <img src="https://img.shields.io/badge/Built%20with-Vibe%20Coding-ff69b4?style=flat-square" alt="Vibe Coding" />
+  </p>
+
+  <p>
+    <a href="#key-features">Features</a> •
+    <a href="#showcase">Showcase</a> •
+    <a href="#installation">Installation</a> •
+    <a href="#security--privacy">Privacy</a>
   </p>
 </div>
 
 ---
 
-## 📖 简介
+## 🌟 Overview / 项目简介
 
-BiliMusic 是一款专为 Bilibili 音频内容设计的跨平台桌面播放器，支持 Windows 与 macOS 环境。项目全程采用 **Vibe Coding** 的范式构建，由人类开发者与 AI Agent 结对编程完成。
-本工具剥离了原站的视频渲染负担，专注于提供极致的音频流体验与本地播放列表管理系统，并配备了一套基于 CSS 变量驱动的响应式亮/暗色模式 UI。
+**BiliMusic** 是一款旨在通过极致精简的方式，带给你 Bilibili 听歌体验的跨平台桌面客户端。它剥离了视频流的冗余开销，专注于音频解析与本地播放管理。
 
-## ✨ Features
+这是一个纯正的 **Vibe Coding** 作品 —— 由人类开发者驱动创意，AI Agent 深度参与代码实现的结对编程产物。
 
-*   **🎧 全解析无缝连播**：不仅支持标准单曲解析，还专门对 B 站“多分 P 视频合集”实现了自动展开排队逻辑，无需人为干预即可平滑连播。
-*   **🎨 原生级状态同步UI**：提供响应迅速的深色/浅色模式无缝热更，拥有基于高斯毛玻璃的景深图层设计，保证客户端应用的沉浸感。
-*   **📡 全局检索与 B 站授权**：内嵌 B 站官方的 HTTPS 二维码扫码登录流。登录后不仅支持获取最高质量音频流，也能读取用户的推荐 feed 流与播放历史。
-*   **📂 本地强隔离持久化**：应用状态、播放列表与听歌历史通过 `electron-store` 落盘在系统本地，即使换号登录也可保留本地歌单数据。
-*   **💻 多平台支持能力**：基于 Electron + Vite 架构设计，支持打包发布至 Windows (`.exe`) 和 macOS (`.dmg`) 平台。
+## ✨ Key Features / 功能亮点
 
-## 📸 Screenshots
+- **🎯 Core Audio Experience (核心播放体验)**
+  - 自动解构 B 站多分 P 视频，支持全合辑自动入队与连播，彻底告别手动换 P。
+  - 支持随机播放、循环模式及本地播放历史记录。
+- **🌓 Adaptive Theme System (主题适配系统)**
+  - 深度定制的 Dark / Light 模式。
+  - 采用高阶 CSS 变量驱动，实现亚克力磨砂毛玻璃效果的热切换。
+- **🔐 Privacy First (隐私至上)**
+  - 数据 100% 存储于本地 `electron-store`。
+  - 无任何隐藏服务器，所有请求直连 Bilibili 官方接口。
+- **📦 Cross-Platform (跨平台支持)**
+  - 同时支持 macOS (ARM64/Intel) 与 Windows 系统。
 
-| 播放主干 (Dark Mode) | 浅色引擎 (Light Mode) |
+## 📸 Showcase / 界面预览
+
+| 暗色模式 (Dark Mode) | 日间模式 (Light Mode) |
 | :---: | :---: |
-| <img src="assets/screenshots/dark_main.png" alt="Dark Main" width="400"/> | <img src="assets/screenshots/light_main.png" alt="Light Main" width="400"/> |
+| <img src="assets/screenshots/dark_main.png" alt="Dark Mode" width="450"/> | <img src="assets/screenshots/light_main.png" alt="Light Mode" width="450"/> |
 
-| 搜索与播放列表 | 悬浮设置与扫码流 |
+| 搜索 (Search) | 侧边栏与设置 (Settings) |
 | :---: | :---: |
-| <img src="assets/screenshots/search.png" alt="Search View" width="400"/> | <img src="assets/screenshots/login.png" alt="Settings & Login" width="400"/> |
+| <img src="assets/screenshots/search.png" alt="Search" width="450"/> | <img src="assets/screenshots/login.png" alt="Settings" width="450"/> |
 
-## 🚀 Installation
+## 🛠️ Tech Stack / 技术栈
 
-### 常规要求
-请确保本地已安装 [Node.js](https://nodejs.org/) (推荐 LTS v18+) 与包管理器。
+- **Runtime**: Electron 30 + Node.js
+- **Frontend**: React 18 + Vite 5 + TypeScript
+- **Styling**: Native CSS Variables (Zero Runtime CSS-in-JS)
+- **Networking**: Custom IPC Audio Proxy (Bypassing Referer/CORS)
 
-### 1. 源码部署
+## 🚀 Get Started / 快速上手
+
+### 1. Installation
 ```bash
-git clone https://github.com/your-repo/bilimusic.git
+git clone https://github.com/Abitalo/bilimusic.git
 cd bilimusic
 npm install
 ```
 
-### 2. 调试运行 (Dev)
+### 2. Build for your OS
 ```bash
-npm run dev
-```
-此命令将拉起一个本地渲染进程服务 (Vite/React)，并挂载 Electron 主进程与自带网络代理服务，支持 HMR。
+# Build for macOS
+npm run build -- --mac dmg --arm64
 
-### 3. 多平台打包发布 (Build)
-根据您希望分发的操作系统底盘，执行以下特定指令交接给 `electron-builder` 进行封装：
-
-**打包至 macOS (.dmg / .app)**  
-*(需在 macOS 主机环境下运行)*
-```bash
-npm run build && npx electron-builder --mac
+# Build for Windows
+npm run build -- --win nsis --x64
 ```
 
-**打包至 Windows (.exe / .nsis)**  
-*(可在 Windows 或 macOS 主机环境下跨端/本端编译)*
-```bash
-npm run build && npx electron-builder --win
-```
-输出的可执行安装文件将自动投放至项目根目录下的 `release/`（Mac）或 `dist/`（部分 Win 配置）文件夹中。
+## 🔐 Security & Privacy / 安全与隐私
 
-## 🔐 Security & Privacy (数据与隐私安全)
-
-BiliMusic 对于用户数据隐私持**绝对中立且隔离**的技术底线：
-1. **完全的本地沙盒化**：您构建生成的所有播放列表、收藏记录、播放偏好，均通过 `electron-store` 技术**100% 留存在您的本机硬盘中**（如 `%APPDATA%` 或 `~/Library/Application Support`）。
-2. **纯粹的上游通信**：应用本身没有任何专属的后台中央服务器，不存在“应用账户”体系。所有的搜索、推荐与播放请求均直接端到端发往真实的 Bilibili 官方服务器。
-3. **安全的可信授权流**：登录流程完全挂载 Bilibili 官方的 Auth 会话闭环（扫码）。客户端内仅缓存维持会话所需的加密 Token/Cookie 凭证，**杜绝窃取任何隐私隐患**。应用登出后不仅彻底销毁持久化 Cookie，更有严格的本地「抹除一切数据」功能防止本机数据泄露。
-
-## 🛣️ Architecture
-
-本工具的技术基座立足于高容错性及高拓展性的 Node 生态栈：
-
-- **Core Engine**: `Electron 30` + `Vite 5` + `React 18`
-- **Compiler**: `TypeScript` 全量强类型约束
-- **State Flow**: 自构建细粒度发布-订阅状态库 (`Zustand` 抽象逻辑)
-- **Net Proxy**: 为了彻底绕过 B站反爬机制并处理 `Wbi` 鉴权、跨域限制与 `Referer` 检验，主进程中硬编码了一个基于 Socket 的透明 `localhost:48261` 音频流转发代理。
-- **Styling**: 拒绝臃肿的 CSS 引擎封装，全程使用 Vanilla Native CSS 构建组件，性能开销极小。
+- **Zero Data Leak**: 所有的扫码登录凭证仅在您的本地加密存储。
+- **Local Sandbox**: 播放列表与偏好设置通过本地 `electron-store` 存储在用户本地设备 `%APPDATA%` 或 `~/Library/Application Support`。
+- **No Third-party Tracking**: 不包含任何统计插件或数据采集后台。
 
 ## 📜 License
 
-[MIT License](LICENSE) © 2026 BiliMusic Open-Source. 
-This project is for educational and communication purposes only.
+Inspired by music lovers. Distributed under the [MIT License](LICENSE).

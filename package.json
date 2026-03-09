@@ -1,7 +1,7 @@
 {
   "name": "bilimusic",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Desktop Bilibili music player built with Electron, React, and Vite.",
   "author": "BiliMusic Contributors",
   "type": "module",
@@ -20,6 +20,18 @@
       "output": "release/${version}",
       "buildResources": "build"
     },
+    "files": [
+      "dist/**/*",
+      "dist-electron/**/*",
+      "package.json",
+      "!release{,/**}",
+      "!src{,/**}",
+      "!shared{,/**}",
+      "!assets{,/**}",
+      "!build{,/**}",
+      "!public{,/**}",
+      "!*.md"
+    ],
     "icon": "build/icons/icon.png",
     "mac": {
       "category": "public.app-category.music",
