@@ -1,86 +1,113 @@
-import { ipcMain } from 'electron';
-import { searchBilibili, getPlayUrl, getVideoDetail, getPageList, getLoginUrl, pollLogin, getUserInfo, logout, getRecommendFeed } from './bilibili-api';
-import store from './store';
+import { ipcMain } from 'electron'
+import type { Playlist, Track } from '../shared/models'
+import { getLoginUrl, getPageList, getPlayUrl, getRecommendFeed, getUserInfo, getVideoDetail, logout, pollLogin, searchBilibili } from './bilibili-api'
+import { loadAppState, saveHistory, savePlaylists } from './store'
 
-function getErrorMessage(err: unknown) {
-    return err instanceof Error ? err.message : 'Unknown error'
+function toErrorResponse(error: unknown) {
+    return {
+        code: -1,
+        message: error instanceof Error ? error.message : 'Unknown error',
+    }
 }
 
 export function setupIpcHandlers() {
-    ipcMain.handle('search-video', async (_, keyword: string, page = 1) => {
+    ipcMain.handle('app:load-state', () => {
+        return loadAppState()
+    })
+
+    ipcMain.handle('app:save-playlists', (_, playlists: Playlist[]) => {
         try {
-            return await searchBilibili(keyword, page);
-        } catch (err: unknown) {
-            console.error('Search error:', err);
-            return { code: -1, message: getErrorMessage(err) };
+            savePlaylists(playlists)
+            return true
+        } catch (error) {
+            console.error('SavePlaylists error:', error)
+            return false
         }
-    });
+    })
 
-    ipcMain.handle('get-play-url', async (_, bvid: string, cid: number) => {
+    ipcMain.handle('app:save-history', (_, history: Track[]) => {
         try {
-            return await getPlayUrl(bvid, cid);
-        } catch (err: unknown) {
-            console.error('PlayUrl error:', err);
-            return { code: -1, message: getErrorMessage(err) };
+            saveHistory(history)
+            return true
+        } catch (error) {
+            console.error('SaveHistory error:', error)
+            return false
         }
-    });
+    })
 
-    ipcMain.handle('get-video-detail', async (_, bvid: string) => {
+    ipcMain.handle('bili:search-videos', async (_, keyword: string, page = 1) => {
         try {
-            return await getVideoDetail(bvid);
-        } catch (err: any) {
-            console.error('VideoDetail error:', err);
-            return { code: -1, message: err?.message };
+            return await searchBilibili(keyword, page)
+        } catch (error) {
+            console.error('Search error:', error)
+            return toErrorResponse(error)
         }
-    });
+    })
 
-    ipcMain.handle('get-page-list', async (_, bvid: string) => {
+    ipcMain.handle('bili:get-play-url', async (_, bvid: string, cid: number) => {
         try {
-            return await getPageList(bvid);
-        } catch (err: any) {
-            console.error('PageList error:', err);
-            return { code: -1, message: err?.message };
+            return await getPlayUrl(bvid, cid)
+        } catch (error) {
+            console.error('PlayUrl error:', error)
+            return toErrorResponse(error)
         }
-    });
+    })
 
-    ipcMain.handle('get-recommend-feed', async () => {
+    ipcMain.handle('bili:get-video-detail', async (_, bvid: string) => {
         try {
-            return await getRecommendFeed();
-        } catch (err: any) {
-            console.error('RecommendFeed error:', err);
-            return { code: -1, message: err?.message };
+            return await getVideoDetail(bvid)
+        } catch (error) {
+            console.error('VideoDetail error:', error)
+            return toErrorResponse(error)
         }
-    });
+    })
 
-    // Login
-    ipcMain.handle('get-login-qrcode', async () => {
-        try { return await getLoginUrl(); } catch (err: any) { return { code: -1, message: err?.message }; }
-    });
+    ipcMain.handle('bili:get-page-list', async (_, bvid: string) => {
+        try {
+            return await getPageList(bvid)
+        } catch (error) {
+            console.error('PageList error:', error)
+            return toErrorResponse(error)
+        }
+    })
 
-    ipcMain.handle('poll-login-qrcode', async (_, key: string) => {
-        try { return await pollLogin(key); } catch (err: any) { return { code: -1, message: err?.message }; }
-    });
+    ipcMain.handle('bili:get-recommend-feed', async () => {
+        try {
+            return await getRecommendFeed()
+        } catch (error) {
+            console.error('RecommendFeed error:', error)
+            return toErrorResponse(error)
+        }
+    })
 
-    ipcMain.handle('get-user-info', async () => {
-        try { return await getUserInfo(); } catch (err: any) { return { code: -1, message: err?.message }; }
-    });
+    ipcMain.handle('auth:get-login-qrcode', async () => {
+        try {
+            return await getLoginUrl()
+        } catch (error) {
+            console.error('GetLoginQrCode error:', error)
+            return toErrorResponse(error)
+        }
+    })
 
-    ipcMain.handle('logout', () => {
-        return logout();
-    });
+    ipcMain.handle('auth:poll-login-qrcode', async (_, key: string) => {
+        try {
+            return await pollLogin(key)
+        } catch (error) {
+            console.error('PollLoginQrCode error:', error)
+            return toErrorResponse(error)
+        }
+    })
 
-    // Store (for playlists, history, etc)
-    ipcMain.handle('store-get', (_, key: string) => {
-        return store.get(key);
-    });
+    ipcMain.handle('auth:get-user-info', async () => {
+        try {
+            return await getUserInfo()
+        } catch (error) {
+            console.error('GetUserInfo error:', error)
+            return toErrorResponse(error)
+        }
+    })
 
-    ipcMain.handle('store-set', (_, key: string, value: any) => {
-        store.set(key, value);
-        return true;
-    });
-
-    ipcMain.handle('store-delete', (_, key: string) => {
-        store.delete(key);
-        return true;
-    });
+    ipcMain.handle('auth:logout', () => {
+        return logout()
+    })
 }

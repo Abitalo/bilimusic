@@ -1,20 +1,22 @@
-import { useState, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Search, Bell, Settings } from 'lucide-react'
+import type { UserInfo } from '../types'
+import { getRendererApi } from '../utils/ipc'
 import QRLogin from './QRLogin'
 import './TopBar.css'
 
 export default function TopBar() {
     const [query, setQuery] = useState('')
-    const [userInfo, setUserInfo] = useState<any>(null)
+    const [userInfo, setUserInfo] = useState<UserInfo | null>(null)
     const [isLoginModalOpen, setIsLoginModalOpen] = useState(false)
     const navigate = useNavigate()
 
-    const checkLoginStatus = async () => {
+    const checkLoginStatus = useCallback(async () => {
         try {
-            const response = await (window as any).ipcRenderer.invoke('get-user-info')
-            if (response?.data?.isLogin) {
+            const response = await getRendererApi().getUserInfo()
+            if (response.code === 0 && 'data' in response && response.data?.isLogin) {
                 setUserInfo(response.data)
             } else {
                 setUserInfo(null)
@@ -23,10 +25,30 @@ export default function TopBar() {
             console.error('Failed to fetch user info:', error)
             setUserInfo(null)
         }
-    }
+    }, [])
 
     useEffect(() => {
-        checkLoginStatus()
+        let isCancelled = false
+
+        void getRendererApi().getUserInfo()
+            .then((response) => {
+                if (isCancelled) return
+                if (response.code === 0 && 'data' in response && response.data?.isLogin) {
+                    setUserInfo(response.data)
+                } else {
+                    setUserInfo(null)
+                }
+            })
+            .catch((error) => {
+                if (!isCancelled) {
+                    console.error('Failed to fetch user info:', error)
+                    setUserInfo(null)
+                }
+            })
+
+        return () => {
+            isCancelled = true
+        }
     }, [])
 
     const handleSearch = (e: FormEvent) => {
@@ -81,7 +103,7 @@ export default function TopBar() {
                     onClose={() => setIsLoginModalOpen(false)}
                     onSuccess={() => {
                         setIsLoginModalOpen(false)
-                        checkLoginStatus()
+                        void checkLoginStatus()
                     }}
                 />
             )}

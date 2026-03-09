@@ -2,6 +2,8 @@
 
 > 最后更新: 2026-03-05 18:44 (UTC+8)  
 > Git commit: `da43fea` — "init: minimum runnable demo"
+>
+> 说明: 此文档描述的是首轮结构化重构前的交接状态。当前代码请优先以 `README.md` 和 `PROJECT_AUDIT_2026-03-06.md` 为准。
 
 ---
 

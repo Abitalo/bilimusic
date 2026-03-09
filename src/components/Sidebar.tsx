@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { Home, Search, Library, Clock, PlusCircle, List, Trash2, Heart, Menu } from 'lucide-react'
+import { useDialog } from '../hooks/useDialog'
 import { useAppStore } from '../hooks/useAppStore'
 import homeLogo from '../assets/home_logo.png'
 import './Sidebar.css'
@@ -20,6 +21,7 @@ interface SidebarProps {
 
 export default function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
   const { playlists, createPlaylist, deletePlaylist } = useAppStore()
+  const { confirm } = useDialog()
   const [isCreating, setIsCreating] = useState(false)
   const [newPlaylistName, setNewPlaylistName] = useState('')
 
@@ -108,10 +110,17 @@ export default function Sidebar({ isCollapsed, onToggle }: SidebarProps) {
                   <button
                     className="delete-playlist-btn"
                     title="删除列表"
-                    onClick={(e) => {
+                    onClick={async (e) => {
                       e.preventDefault()
-                      if (confirm(`确定要删除播放列表 "${pl.name}" 吗？`)) {
-                        deletePlaylist(pl.id)
+                      const approved = await confirm({
+                        title: '删除播放列表',
+                        description: `确定要删除“${pl.name}”吗？这个操作不会影响已播放历史，但会移除列表本身。`,
+                        confirmText: '删除',
+                        cancelText: '取消',
+                        tone: 'danger',
+                      })
+                      if (approved) {
+                        await deletePlaylist(pl.id)
                       }
                     }}
                   >

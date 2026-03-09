@@ -112,92 +112,7 @@
     transform: scale(1.05);
 }
 
-/* Track List Table */
-.track-list {
-    display: flex;
-    flex-direction: column;
-}
-
-.track-header-row {
-    display: flex;
-    padding: 12px 16px;
-    color: var(--text-secondary);
-    font-size: 13px;
-    font-weight: 500;
-    border-bottom: 1px solid var(--bg-elevated);
-    margin-bottom: 8px;
-}
-
-.track-row {
-    display: flex;
-    padding: 8px 16px;
-    align-items: center;
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all var(--transition-fast);
-}
-
-.track-row:hover {
-    background: var(--bg-hover);
-}
-
-.col-index {
-    width: 40px;
-    text-align: center;
-    color: var(--text-tertiary);
-    font-variant-numeric: tabular-nums;
-}
-
-.col-title {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    overflow: hidden;
-}
-
-.col-duration {
-    width: 80px;
-    text-align: right;
-    color: var(--text-secondary);
-    font-variant-numeric: tabular-nums;
-    padding-right: 16px;
-}
-
-.col-action {
-    width: 40px;
-    text-align: center;
-}
-
-.tiny-cover {
-    width: 40px;
-    height: 40px;
-    border-radius: 4px;
-    object-fit: cover;
-    flex-shrink: 0;
-}
-
-.title-text {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-}
-
-.track-name {
-    font-size: 15px;
-    font-weight: 500;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.track-artist {
-    font-size: 13px;
-    color: var(--text-secondary);
-    margin-top: 4px;
-}
-
-.track-row:hover .track-name {
+.app-track-row:hover .app-track-name {
     color: var(--text-primary);
 }
 
@@ -212,7 +127,7 @@
     transition: all var(--transition-fast);
 }
 
-.track-row:hover .remove-track-btn {
+.app-track-row:hover .remove-track-btn {
     opacity: 1;
 }
 

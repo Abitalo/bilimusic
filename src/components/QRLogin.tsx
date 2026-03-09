@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
+import QRCode from 'react-qr-code'
+import { getRendererApi } from '../utils/ipc'
 import './QRLogin.css'
 
 interface QRLoginProps {
@@ -12,48 +14,61 @@ export default function QRLogin({ onClose, onSuccess }: QRLoginProps) {
     const [qrKey, setQrKey] = useState('')
     const [statusMsg, setStatusMsg] = useState('正在获取二维码...')
     const [error, setError] = useState(false)
-    const pollTimer = useRef<any>(null)
+    const pollTimer = useRef<number | null>(null)
+
+    const clearPollTimer = () => {
+        if (pollTimer.current !== null) {
+            window.clearInterval(pollTimer.current)
+            pollTimer.current = null
+        }
+    }
 
     useEffect(() => {
-        // Generate QR code
-        const ipc = (window as any).ipcRenderer
-        if (!ipc) {
-            setStatusMsg('IPC 不可用，请重启应用')
-            setError(true)
-            return
+        let isCancelled = false
+
+        async function loadQrCode() {
+            try {
+                const response = await getRendererApi().getLoginQrCode()
+                if (isCancelled) return
+
+                if (response.code === 0 && 'data' in response && response.data?.url) {
+                    setQrUrl(response.data.url)
+                    setQrKey(response.data.qrcode_key)
+                    setStatusMsg('请使用 Bilibili 手机客户端扫码')
+                    setError(false)
+                } else {
+                    setStatusMsg(response.message || '获取二维码失败，请重试')
+                    setError(true)
+                }
+            } catch (err) {
+                if (!isCancelled) {
+                    console.error('QR code error:', err)
+                    setStatusMsg(err instanceof Error ? `网络异常：${err.message}` : '网络异常：未知错误')
+                    setError(true)
+                }
+            }
         }
 
-        ipc.invoke('get-login-qrcode').then((res: any) => {
-            if (res?.data?.url) {
-                setQrUrl(res.data.url)
-                setQrKey(res.data.qrcode_key)
-                setStatusMsg('请使用 Bilibili 手机客户端扫码')
-            } else {
-                setStatusMsg('获取二维码失败，请重试')
-                setError(true)
-            }
-        }).catch((err: any) => {
-            console.error('QR code error:', err)
-            setStatusMsg('网络异常：' + (err?.message || '未知错误'))
-            setError(true)
-        })
+        void loadQrCode()
 
         return () => {
-            if (pollTimer.current) clearInterval(pollTimer.current)
+            isCancelled = true
+            clearPollTimer()
         }
     }, [])
 
     useEffect(() => {
         if (!qrKey) return
 
-        const ipc = (window as any).ipcRenderer
-        if (!ipc) return
+        let isCancelled = false
 
         // Poll status every 3 seconds
-        pollTimer.current = setInterval(async () => {
+        pollTimer.current = window.setInterval(async () => {
             try {
-                const res = await ipc.invoke('poll-login-qrcode', qrKey)
-                const code = res?.data?.code
+                const response = await getRendererApi().pollLoginQrCode(qrKey)
+                if (isCancelled) return
+
+                const code = 'data' in response ? response.data?.code : undefined
 
                 /* 
                   B站扫码状态码：
@@ -64,11 +79,11 @@ export default function QRLogin({ onClose, onSuccess }: QRLoginProps) {
                 */
                 if (code === 0) {
                     setStatusMsg('登录成功！')
-                    if (pollTimer.current) clearInterval(pollTimer.current)
-                    setTimeout(onSuccess, 1500)
+                    clearPollTimer()
+                    window.setTimeout(onSuccess, 1500)
                 } else if (code === 86038) {
                     setStatusMsg('二维码已失效，请刷新重新获取')
-                    if (pollTimer.current) clearInterval(pollTimer.current)
+                    clearPollTimer()
                 } else if (code === 86090) {
                     setStatusMsg('已扫码，请在手机端确认登录')
                 }
@@ -78,14 +93,10 @@ export default function QRLogin({ onClose, onSuccess }: QRLoginProps) {
         }, 3000)
 
         return () => {
-            if (pollTimer.current) clearInterval(pollTimer.current)
+            isCancelled = true
+            clearPollTimer()
         }
     }, [qrKey, onSuccess])
-
-    // Use a public QR code API to render the image (avoids react-qr-code crash)
-    const qrImageUrl = qrUrl
-        ? `https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=${encodeURIComponent(qrUrl)}`
-        : ''
 
     const modal = (
         <div className="qr-modal-overlay" onClick={onClose}>
@@ -94,13 +105,12 @@ export default function QRLogin({ onClose, onSuccess }: QRLoginProps) {
                 <h2 className="qr-title">登录 Bilibili</h2>
 
                 <div className="qr-wrapper">
-                    {qrImageUrl ? (
-                        <img
-                            src={qrImageUrl}
-                            alt="Login QR Code"
-                            width={180}
-                            height={180}
-                            style={{ display: 'block' }}
+                    {qrUrl ? (
+                        <QRCode
+                            value={qrUrl}
+                            size={180}
+                            bgColor="transparent"
+                            fgColor="#000000"
                         />
                     ) : (
                         <div className="qr-placeholder">

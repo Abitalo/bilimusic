@@ -157,7 +157,7 @@
 
 .sidebar-divider {
     height: 1px;
-    background: var(--glass-border);
+    background: var(--border-subtle);
     margin: 8px 12px;
 }
 
@@ -194,7 +194,7 @@
     width: 100%;
     padding: 8px 12px;
     background: rgba(255, 255, 255, 0.06);
-    border: 1px solid var(--glass-border);
+    border: 1px solid var(--border-subtle);
     border-radius: 8px;
     color: var(--text-primary);
     font-size: 13px;

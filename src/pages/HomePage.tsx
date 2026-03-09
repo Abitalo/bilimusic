@@ -1,93 +1,53 @@
 import { useState, useEffect } from 'react'
 import { Play } from 'lucide-react'
 import type { Track } from '../types'
+import { getRendererApi } from '../utils/ipc'
+import { feedItemToTrack, type FeedCardItem, recommendResponseToFeed } from '../utils/tracks'
 import './HomePage.css'
-
-interface FeedItem {
-    bvid: string
-    title: string
-    author: string
-    pic: string
-    duration: number
-    play: number
-}
 
 interface HomePageProps {
     onPlayTrack: (t: Track) => void
 }
 
 export default function HomePage({ onPlayTrack }: HomePageProps) {
-    const [feed, setFeed] = useState<FeedItem[]>([])
+    const [feed, setFeed] = useState<FeedCardItem[]>([])
     const [loading, setLoading] = useState(true)
 
     useEffect(() => {
-        const loadFeed = async () => {
-            try {
-                const res = await (window as any).ipcRenderer.invoke('get-recommend-feed')
-                const items: FeedItem[] = []
+        let isCancelled = false
 
-                // Parse dynamic/region format
-                if (res?.data?.archives) {
-                    res.data.archives.forEach((a: any) => {
-                        items.push({
-                            bvid: a.bvid,
-                            title: a.title,
-                            author: a.owner?.name || '未知UP主',
-                            pic: a.pic,
-                            duration: a.duration || 0,
-                            play: a.stat?.view || 0
-                        })
-                    })
-                } else if (res?.data?.item) {
-                    // Parse top rcmd format
-                    res.data.item.forEach((a: any) => {
-                        items.push({
-                            bvid: a.bvid,
-                            title: a.title,
-                            author: a.owner?.name || '未知UP主',
-                            pic: a.pic,
-                            duration: a.duration || 0,
-                            play: a.stat?.view || 0
-                        })
-                    })
+        async function loadFeed() {
+            try {
+                const response = await getRendererApi().getRecommendFeed()
+                if (isCancelled) {
+                    return
                 }
-                setFeed(items)
-            } catch (err) {
-                console.error('Failed to load feed', err)
+
+                if (response.code === 0 && 'data' in response) {
+                    setFeed(recommendResponseToFeed(response))
+                } else {
+                    setFeed([])
+                }
+            } catch (error) {
+                if (!isCancelled) {
+                    console.error('Failed to load feed', error)
+                }
             } finally {
-                setLoading(false)
+                if (!isCancelled) {
+                    setLoading(false)
+                }
             }
         }
-        loadFeed()
+
+        void loadFeed()
+
+        return () => {
+            isCancelled = true
+        }
     }, [])
 
-    const handlePlayCard = async (item: FeedItem) => {
-        try {
-            const detailRes = await (window as any).ipcRenderer.invoke('get-video-detail', item.bvid)
-            let cid = detailRes?.data?.cid || detailRes?.data?.pages?.[0]?.cid
-            if (!cid) {
-                const pageListRes = await (window as any).ipcRenderer.invoke('get-page-list', item.bvid)
-                cid = pageListRes?.data?.[0]?.cid
-            }
-            if (!cid) {
-                alert('播放失败: 无法获取该推荐视频的 cid。')
-                return
-            }
-
-            const track: Track = {
-                bvid: item.bvid,
-                cid,
-                title: item.title,
-                artist: item.author,
-                cover: item.pic,
-                duration: item.duration || 0,
-                addedAt: Date.now()
-            }
-
-            onPlayTrack(track)
-        } catch (e) {
-            console.error(e)
-        }
+    const handlePlayCard = (item: FeedCardItem) => {
+        onPlayTrack(feedItemToTrack(item))
     }
 
     return (

@@ -9,11 +9,11 @@ import SearchPage from './pages/SearchPage'
 import LibraryPage from './pages/LibraryPage'
 import HistoryPage from './pages/HistoryPage'
 import PlaylistPage from './pages/PlaylistPage'
+import { useDialog } from './hooks/useDialog'
 import { useAppStore } from './hooks/useAppStore'
 import type { Track } from './types'
+import { resolvePlaybackSource } from './services/playback'
 import './App.css'
-
-const AUDIO_PROXY_PORT = 48261
 
 function App() {
   const [currentTrack, setCurrentTrack] = useState<Track | null>(null)
@@ -26,53 +26,28 @@ function App() {
   const audioRef = useRef<HTMLAudioElement>(null)
 
   const { addToHistory } = useAppStore()
+  const { alert } = useDialog()
 
   const playTrack = useCallback(async (track: Track) => {
     try {
-      // Ensure we have the cid
-      let cid = track.cid
-      if (!cid) {
-        const detail = await (window as any).ipcRenderer.invoke('get-video-detail', track.bvid)
-        const resolvedCid = detail?.data?.cid || detail?.data?.pages?.[0]?.cid
-        if (!resolvedCid) {
-          console.error('No cid found for', track.bvid)
-          return
-        }
-        cid = resolvedCid
-        track = { ...track, cid }
-      }
+      const audioElement = audioRef.current
+      if (!audioElement) return
 
-      // Get audio URL
-      const playData = await (window as any).ipcRenderer.invoke('get-play-url', track.bvid, cid)
-      const dashAudio = playData?.data?.dash?.audio
-      if (!dashAudio || dashAudio.length === 0) {
-        console.error('No audio stream found', playData)
-        return
-      }
-
-      // Pick the highest quality audio
-      const audioUrl = dashAudio[0].baseUrl || dashAudio[0].base_url
-      if (!audioUrl) {
-        console.error('No valid audio URL found', dashAudio[0])
-        return
-      }
-
-      // Route through local proxy to bypass Referer checks
-      const proxiedUrl = `http://127.0.0.1:${AUDIO_PROXY_PORT}/?url=${encodeURIComponent(audioUrl)}`
-
-      if (audioRef.current) {
-        audioRef.current.src = proxiedUrl
-        audioRef.current.play()
-        setIsPlaying(true)
-        setCurrentTrack(track)
-
-        // Add to history
-        addToHistory(track)
-      }
+      const { track: playableTrack, src } = await resolvePlaybackSource(track)
+      audioElement.pause()
+      audioElement.src = src
+      audioElement.currentTime = 0
+      setCurrentTrack(playableTrack)
+      await audioElement.play()
+      await addToHistory(playableTrack)
     } catch (err) {
       console.error('Error playing track:', err)
+      void alert({
+        title: '播放失败',
+        description: err instanceof Error ? err.message : '播放失败，请稍后重试。',
+      })
     }
-  }, [])
+  }, [addToHistory, alert])
 
   const handlePlayTrack = useCallback((track: Track, newQueue?: Track[]) => {
     if (newQueue) {

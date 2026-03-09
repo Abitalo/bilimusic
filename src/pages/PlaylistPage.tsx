@@ -1,8 +1,12 @@
 import { useMemo } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Play, Trash2, ListMusic } from 'lucide-react'
+import { useDialog } from '../hooks/useDialog'
 import { useAppStore } from '../hooks/useAppStore'
 import type { Track } from '../types'
+import PageState from '../components/PageState'
+import TrackTable from '../components/TrackTable'
+import { formatDuration } from '../utils/tracks'
 import './PlaylistPage.css'
 
 interface PlaylistPageProps {
@@ -12,15 +16,27 @@ interface PlaylistPageProps {
 export default function PlaylistPage({ onPlayTrack }: PlaylistPageProps) {
     const { id } = useParams<{ id: string }>()
     const navigate = useNavigate()
-    const { playlists, deletePlaylist, removeTrackFromPlaylist } = useAppStore()
+    const { confirm } = useDialog()
+    const { playlists, deletePlaylist, removeTrackFromPlaylist, isHydrated } = useAppStore()
 
     const playlist = useMemo(() => playlists.find(p => p.id === id), [playlists, id])
+
+    if (!isHydrated) {
+        return (
+            <div className="playlist-page">
+                <PageState title="正在加载播放列表..." compact />
+            </div>
+        )
+    }
 
     if (!playlist) {
         return (
             <div className="playlist-page not-found">
-                <h2>找不到该播放列表</h2>
-                <button className="back-btn" onClick={() => navigate('/library')}>返回收藏库</button>
+                <PageState
+                    title="找不到该播放列表"
+                    description="它可能已经被删除，或者当前链接已经失效。"
+                    action={<button className="back-btn" onClick={() => navigate('/library')}>返回收藏库</button>}
+                />
             </div>
         )
     }
@@ -32,7 +48,14 @@ export default function PlaylistPage({ onPlayTrack }: PlaylistPageProps) {
     }
 
     const handleDelete = async () => {
-        if (confirm(`确定要删除 "${playlist.name}" 吗？`)) {
+        const approved = await confirm({
+            title: '删除播放列表',
+            description: `确定要删除“${playlist.name}”吗？删除后不会自动恢复。`,
+            confirmText: '删除',
+            cancelText: '取消',
+            tone: 'danger',
+        })
+        if (approved) {
             await deletePlaylist(playlist.id)
             navigate('/library')
         }
@@ -40,33 +63,20 @@ export default function PlaylistPage({ onPlayTrack }: PlaylistPageProps) {
 
     const handleDeleteTrack = async (trackBvid: string, e: React.MouseEvent) => {
         e.stopPropagation()
-        if (confirm('确定要从列表中移除这首歌曲吗？')) {
+        const approved = await confirm({
+            title: '移出列表',
+            description: '确定要把这首歌从当前播放列表中移除吗？',
+            confirmText: '移除',
+            cancelText: '取消',
+            tone: 'danger',
+        })
+        if (approved) {
             await removeTrackFromPlaylist(playlist.id, trackBvid)
         }
     }
 
-    const handlePlayTrack = async (targetTrack: Track, queue?: Track[]) => {
-        let playableTrack = { ...targetTrack }
-        if (!playableTrack.cid) {
-            try {
-                const detailRes = await (window as any).ipcRenderer.invoke('get-video-detail', playableTrack.bvid)
-                let cid = detailRes?.data?.cid || detailRes?.data?.pages?.[0]?.cid
-                if (!cid) {
-                    const pageListRes = await (window as any).ipcRenderer.invoke('get-page-list', playableTrack.bvid)
-                    cid = pageListRes?.data?.[0]?.cid
-                }
-                if (cid) {
-                    playableTrack.cid = cid
-                } else {
-                    alert('播放失败: 由于B站接口限制，该结果无法播放。')
-                    return
-                }
-            } catch (err) {
-                console.error('Failed to get cid for playback', err)
-                return
-            }
-        }
-        onPlayTrack(playableTrack, queue)
+    const handlePlayTrack = (targetTrack: Track, queue?: Track[]) => {
+        onPlayTrack(targetTrack, queue)
     }
 
     return (
@@ -102,47 +112,27 @@ export default function PlaylistPage({ onPlayTrack }: PlaylistPageProps) {
 
             <div className="tracks-container">
                 {playlist.tracks.length === 0 ? (
-                    <div className="empty-tracks">
-                        <p>这个列表还是空的</p>
-                        <button className="go-search-btn" onClick={() => navigate('/search')}>去搜索添加歌曲</button>
-                    </div>
+                    <PageState
+                        title="这个列表还是空的"
+                        description="去搜索页添加几首歌后，这里会变成你的播放入口。"
+                        action={<button className="go-search-btn" onClick={() => navigate('/search')}>去搜索添加歌曲</button>}
+                    />
                 ) : (
-                    <div className="track-list">
-                        <div className="track-header-row">
-                            <div className="col-index">#</div>
-                            <div className="col-title">标题</div>
-                            <div className="col-duration">时长</div>
-                            <div className="col-action"></div>
-                        </div>
-                        {playlist.tracks.map((track, idx) => (
-                            <div
-                                key={`${track.bvid}-${idx}`}
-                                className="track-row"
-                                onClick={() => handlePlayTrack(track, playlist.tracks)}
+                    <TrackTable
+                        tracks={playlist.tracks}
+                        metaLabel="时长"
+                        getMeta={(track) => formatDuration(track.duration)}
+                        onTrackClick={(track) => handlePlayTrack(track, playlist.tracks)}
+                        renderAction={(track) => (
+                            <button
+                                className="remove-track-btn"
+                                onClick={(e) => handleDeleteTrack(track.bvid, e)}
+                                title="移出列表"
                             >
-                                <div className="col-index">{idx + 1}</div>
-                                <div className="col-title">
-                                    <img src={track.cover} alt="" className="tiny-cover" crossOrigin="anonymous" />
-                                    <div className="title-text">
-                                        <span className="track-name">{track.title}</span>
-                                        <span className="track-artist">{track.artist}</span>
-                                    </div>
-                                </div>
-                                <div className="col-duration">
-                                    {Math.floor(track.duration / 60)}:{String(track.duration % 60).padStart(2, '0')}
-                                </div>
-                                <div className="col-action">
-                                    <button
-                                        className="remove-track-btn"
-                                        onClick={(e) => handleDeleteTrack(track.bvid, e)}
-                                        title="移出列表"
-                                    >
-                                        <Trash2 size={16} />
-                                    </button>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
+                                <Trash2 size={16} />
+                            </button>
+                        )}
+                    />
                 )}
             </div>
         </div>

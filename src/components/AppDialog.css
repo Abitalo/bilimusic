@@ -1,0 +1,124 @@
+.app-dialog-overlay {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+    background: rgba(0, 0, 0, 0.68);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 1100;
+}
+
+.app-dialog-content {
+    position: relative;
+    width: min(100%, 420px);
+    padding: 28px 28px 24px;
+    border-radius: 14px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.02));
+    background-color: var(--bg-elevated);
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.45);
+}
+
+.app-dialog-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.app-dialog-close:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary);
+}
+
+.app-dialog-title {
+    margin: 0;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.app-dialog-description {
+    margin: 10px 0 0;
+    line-height: 1.6;
+    color: var(--text-secondary);
+}
+
+.app-dialog-form {
+    margin-top: 22px;
+}
+
+.app-dialog-label {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    color: var(--text-secondary);
+    font-size: 14px;
+}
+
+.app-dialog-input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.18);
+    color: var(--text-primary);
+    outline: none;
+    transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.app-dialog-input:focus {
+    border-color: var(--accent-green);
+    background: rgba(0, 0, 0, 0.28);
+}
+
+.app-dialog-error {
+    margin: 12px 0 0;
+    font-size: 13px;
+    color: #ff7b7b;
+}
+
+.app-dialog-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 24px;
+}
+
+.app-dialog-btn {
+    min-width: 96px;
+    border: none;
+    border-radius: 999px;
+    padding: 10px 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform var(--transition-fast), opacity var(--transition-fast), background var(--transition-fast);
+}
+
+.app-dialog-btn:hover {
+    transform: translateY(-1px);
+}
+
+.app-dialog-btn.secondary {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-primary);
+}
+
+.app-dialog-btn.primary {
+    background: var(--accent-green);
+    color: #08130d;
+}
+
+.app-dialog-btn.danger {
+    background: #ff6b6b;
+    color: white;
+}

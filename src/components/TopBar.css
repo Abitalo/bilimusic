@@ -128,7 +128,7 @@
     height: 32px;
     border-radius: 50%;
     object-fit: cover;
-    border: 1px solid var(--glass-border);
+    border: 1px solid var(--border-subtle);
     cursor: pointer;
     transition: all var(--transition-fast);
 }

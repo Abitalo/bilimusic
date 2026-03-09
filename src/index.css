@@ -8,6 +8,7 @@
   --text-primary: #ffffff;
   --text-secondary: #b3b3b3;
   --text-tertiary: #a7a7a7;
+  --border-subtle: rgba(255, 255, 255, 0.12);
 
   /* Accent Colors */
   --accent-green: #1db954;

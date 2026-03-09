@@ -2,25 +2,14 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Heart, MoreVertical, Play, ChevronRight } from 'lucide-react'
 import { useAppStore } from '../hooks/useAppStore'
-import type { Track, SearchResult } from '../types'
+import type { SearchResult, Track } from '../types'
+import { getRendererApi } from '../utils/ipc'
+import { buildTrackQueue, searchResponseToResults, searchResultToTrack } from '../utils/tracks'
 import './SearchPage.css'
 
 interface SearchPageProps {
     onPlayTrack: (track: Track, queue?: Track[]) => void
     onPlayNext: (track: Track) => void
-}
-
-// Parse "MM:SS" or "H:MM:SS" duration string to seconds
-function parseDuration(dur: string): number {
-    const parts = dur.split(':').map(Number)
-    if (parts.length === 3) return parts[0] * 3600 + parts[1] * 60 + parts[2]
-    if (parts.length === 2) return parts[0] * 60 + parts[1]
-    return 0
-}
-
-// Strip HTML tags from search result titles
-function stripHtml(html: string): string {
-    return html.replace(/<[^>]*>/g, '')
 }
 
 export default function SearchPage({ onPlayTrack, onPlayNext }: SearchPageProps) {
@@ -31,29 +20,26 @@ export default function SearchPage({ onPlayTrack, onPlayNext }: SearchPageProps)
     const [error, setError] = useState('')
 
     const doSearch = useCallback(async (keyword: string) => {
-        if (!keyword) return
+        if (!keyword) {
+            setResults([])
+            setError('')
+            return
+        }
+
         setLoading(true)
         setError('')
         try {
-            const data = await (window as any).ipcRenderer.invoke('search-video', keyword)
-            if (data.code === 0) {
-                const videoResults = data.data?.result?.find((r: any) => r.result_type === 'video')
-                const items: SearchResult[] = (videoResults?.data || []).map((item: any) => ({
-                    bvid: item.bvid,
-                    aid: item.aid,
-                    title: stripHtml(item.title),
-                    author: item.author,
-                    pic: item.pic?.startsWith('//') ? `https:${item.pic}` : item.pic,
-                    duration: item.duration,
-                    play: item.play,
-                    description: item.description
-                }))
-                setResults(items)
-            } else {
-                setError(data.message || '搜索失败')
+            const response = await getRendererApi().searchVideos(keyword)
+            if (response.code !== 0 || !('data' in response)) {
+                setResults([])
+                setError(response.message || '搜索失败')
+                return
             }
-        } catch (err: any) {
-            setError(err?.message || '搜索请求异常')
+
+            setResults(searchResponseToResults(response))
+        } catch (error) {
+            setResults([])
+            setError(error instanceof Error ? error.message : '搜索请求异常')
         } finally {
             setLoading(false)
         }
@@ -77,69 +63,29 @@ export default function SearchPage({ onPlayTrack, onPlayNext }: SearchPageProps)
                 setShowSubMenu(false)
             }
         }
+
+        const handleScroll = () => {
+            setContextMenu(null)
+            setShowSubMenu(false)
+        }
+
         document.addEventListener('mousedown', handleClickOutside)
-        document.addEventListener('scroll', () => { setContextMenu(null); setShowSubMenu(false) }, true)
+        document.addEventListener('scroll', handleScroll, true)
         return () => {
             document.removeEventListener('mousedown', handleClickOutside)
-            document.removeEventListener('scroll', () => { setContextMenu(null); setShowSubMenu(false) }, true)
+            document.removeEventListener('scroll', handleScroll, true)
         }
     }, [])
 
-    const handlePlay = async (item: SearchResult, idx: number) => {
-        try {
-            let detailRes = await (window as any).ipcRenderer.invoke('get-video-detail', item.bvid)
-            let cid = detailRes?.data?.cid || detailRes?.data?.pages?.[0]?.cid
-
-            if (!cid) {
-                // strict fallback: try pagelist if view API was blocked
-                const pageListRes = await (window as any).ipcRenderer.invoke('get-page-list', item.bvid)
-                cid = pageListRes?.data?.[0]?.cid
-            }
-
-            if (!cid) {
-                console.error('播放失败: 无法获取视频详情或 cid', detailRes)
-                alert('播放失败: 由于B站接口限制或番剧限制，该结果无法播放。')
-                return
-            }
-
-            const track: Track = {
-                bvid: item.bvid,
-                cid,
-                title: item.title,
-                artist: item.author,
-                cover: item.pic,
-                duration: parseDuration(item.duration),
-                addedAt: Date.now()
-            }
-
-            const queue: Track[] = results.map(r => ({
-                bvid: r.bvid,
-                cid: 0,
-                title: r.title,
-                artist: r.author,
-                cover: r.pic,
-                duration: parseDuration(r.duration),
-                addedAt: Date.now()
-            }))
-            queue[idx] = track
-
-            onPlayTrack(track, queue)
-        } catch (err) {
-            console.error('Play error:', err)
-        }
+    const handlePlay = (item: SearchResult, idx: number) => {
+        const addedAt = Date.now()
+        const queue = buildTrackQueue(results, addedAt)
+        const track = queue[idx] ?? searchResultToTrack(item, addedAt)
+        onPlayTrack(track, queue)
     }
 
     const handlePlayNextWrapper = (item: SearchResult) => {
-        const track: Track = {
-            bvid: item.bvid,
-            cid: 0,
-            title: item.title,
-            artist: item.author,
-            cover: item.pic,
-            duration: parseDuration(item.duration),
-            addedAt: Date.now()
-        }
-        onPlayNext(track)
+        onPlayNext(searchResultToTrack(item))
         setContextMenu(null)
     }
 
@@ -153,15 +99,7 @@ export default function SearchPage({ onPlayTrack, onPlayNext }: SearchPageProps)
         setShowSubMenu(false)
     }
 
-    const toTrack = (item: SearchResult): Track => ({
-        bvid: item.bvid,
-        cid: 0,
-        title: item.title,
-        artist: item.author,
-        cover: item.pic,
-        duration: parseDuration(item.duration),
-        addedAt: Date.now()
-    })
+    const toTrack = (item: SearchResult): Track => searchResultToTrack(item)
 
     return (
         <div className="search-page">
@@ -218,7 +156,7 @@ export default function SearchPage({ onPlayTrack, onPlayNext }: SearchPageProps)
                                     className="track-like-btn"
                                     onClick={(e) => {
                                         e.stopPropagation()
-                                        toggleLikeTrack(toTrack(item))
+                                        void toggleLikeTrack(toTrack(item))
                                     }}
                                 >
                                     <Heart size={18} className={liked ? 'liked' : ''} />
@@ -279,7 +217,7 @@ export default function SearchPage({ onPlayTrack, onPlayNext }: SearchPageProps)
                                             key={pl.id}
                                             className="context-menu-item"
                                             onClick={() => {
-                                                addTrackToPlaylist(pl.id, toTrack(contextMenu.track!))
+                                                void addTrackToPlaylist(pl.id, toTrack(contextMenu.track!))
                                                 setContextMenu(null)
                                                 setShowSubMenu(false)
                                             }}

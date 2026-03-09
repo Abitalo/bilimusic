@@ -1,20 +1,23 @@
 import { useAppStore } from '../hooks/useAppStore'
+import PageState from '../components/PageState'
+import TrackTable from '../components/TrackTable'
 import type { Track } from '../types'
+import { formatDuration } from '../utils/tracks'
 import './LibraryPage.css'
-import './PlaylistPage.css' // Reuse list styling
 
 interface HistoryPageProps {
     onPlayTrack: (t: Track) => void
 }
 
 export default function HistoryPage({ onPlayTrack }: HistoryPageProps) {
-    const { history } = useAppStore()
+    const { history, isHydrated } = useAppStore()
 
-    const formatDuration = (seconds: number) => {
-        if (!seconds) return '0:00'
-        const m = Math.floor(seconds / 60)
-        const s = Math.floor(seconds % 60)
-        return `${m}:${s.toString().padStart(2, '0')}`
+    if (!isHydrated) {
+        return (
+            <div className="history-page">
+                <PageState title="正在加载播放历史..." compact />
+            </div>
+        )
     }
 
     return (
@@ -27,32 +30,19 @@ export default function HistoryPage({ onPlayTrack }: HistoryPageProps) {
             </div>
 
             {history.length === 0 ? (
-                <div className="empty-state">
-                    <span className="empty-icon" style={{ fontSize: '48px', marginBottom: '16px' }}>🕐</span>
-                    <h3>暂无播放记录</h3>
-                    <p>播放歌曲后会自动记录在这里</p>
-                </div>
+                <PageState
+                    title="暂无播放记录"
+                    description="播放歌曲后会自动记录在这里。"
+                    icon={<span style={{ fontSize: '48px' }}>🕐</span>}
+                />
             ) : (
-                <div className="track-list" style={{ marginTop: '20px' }}>
-                    <div className="track-header-row">
-                        <div className="col-index">#</div>
-                        <div className="col-title">标题</div>
-                        <div className="col-duration">时间</div>
-                    </div>
-                    {history.map((track, idx) => (
-                        <div key={`${track.bvid}-${track.addedAt}-${idx}`} className="track-row" onClick={() => onPlayTrack(track)}>
-                            <div className="col-index">{idx + 1}</div>
-                            <div className="col-title">
-                                <img src={track.cover} alt={track.title} className="tiny-cover" crossOrigin="anonymous" />
-                                <div className="title-text">
-                                    <span className="track-name">{track.title}</span>
-                                    <span className="track-artist">{track.artist}</span>
-                                </div>
-                            </div>
-                            <div className="col-duration">{formatDuration(track.duration)}</div>
-                        </div>
-                    ))}
-                </div>
+                <TrackTable
+                    tracks={history}
+                    metaLabel="时长"
+                    getMeta={(track) => formatDuration(track.duration)}
+                    onTrackClick={(track) => onPlayTrack(track)}
+                    style={{ marginTop: '20px' }}
+                />
             )}
         </div>
     )

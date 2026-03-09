@@ -21,6 +21,7 @@ if (!isDev && !app.requestSingleInstanceLock()) {
 }
 
 let win: BrowserWindow | null = null
+let audioProxyServer: ReturnType<typeof startAudioProxy> | null = null
 
 function setDevelopmentDockIcon() {
     if (process.platform !== 'darwin' || !isDev) return
@@ -42,7 +43,7 @@ async function createWindow() {
             preload: join(__dirname, 'preload.mjs'),
             nodeIntegration: false,
             contextIsolation: true,
-            webSecurity: false // Disabled for testing B站 API, better to use strict headers interception later
+            webSecurity: true,
         },
         // macOS typical hidden title bar style
         titleBarStyle: 'hiddenInset',
@@ -60,7 +61,7 @@ async function createWindow() {
         win.webContents.on('did-finish-load', async () => {
             try {
                 const bridgeState = await win?.webContents.executeJavaScript(
-                    `({ hasElectronAPI: Boolean(window.electronAPI), hasIpcRenderer: Boolean(window.ipcRenderer) })`
+                    `({ hasBiliMusicApi: Boolean(window.biliMusic) })`
                 )
                 console.log('[bridge-check]', bridgeState)
             } catch (err) {
@@ -73,19 +74,24 @@ async function createWindow() {
 app.whenReady().then(() => {
     setDevelopmentDockIcon()
     setupIpcHandlers()
-    startAudioProxy()
+    audioProxyServer = startAudioProxy()
 
     // Also configure the default session's User-Agent strictly
     session.defaultSession.webRequest.onBeforeSendHeaders((details, callback) => {
         // Only intercept external requests (Bilibili/images), not local vite dev
         if (details.url.includes('bilibili.com') || details.url.includes('hdslb.com')) {
-            details.requestHeaders['User-Agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36';
-            details.requestHeaders['Referer'] = 'https://www.bilibili.com';
+            details.requestHeaders['User-Agent'] = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
+            details.requestHeaders['Referer'] = 'https://www.bilibili.com'
         }
-        callback({ requestHeaders: details.requestHeaders });
+        callback({ requestHeaders: details.requestHeaders })
     })
 
     createWindow()
+})
+
+app.on('will-quit', () => {
+    audioProxyServer?.close()
+    audioProxyServer = null
 })
 
 app.on('window-all-closed', () => {

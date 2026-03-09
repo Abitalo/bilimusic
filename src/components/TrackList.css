@@ -1,0 +1,83 @@
+.app-track-list {
+    display: flex;
+    flex-direction: column;
+}
+
+.app-track-header-row {
+    display: flex;
+    padding: 12px 16px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 500;
+    border-bottom: 1px solid var(--border-subtle);
+    margin-bottom: 8px;
+}
+
+.app-track-row {
+    display: flex;
+    padding: 8px 16px;
+    align-items: center;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.app-track-row:hover {
+    background: var(--bg-hover);
+}
+
+.app-track-col-index {
+    width: 40px;
+    text-align: center;
+    color: var(--text-tertiary);
+    font-variant-numeric: tabular-nums;
+}
+
+.app-track-col-title {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    overflow: hidden;
+}
+
+.app-track-col-duration {
+    width: 80px;
+    text-align: right;
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+    padding-right: 16px;
+}
+
+.app-track-col-action {
+    width: 40px;
+    text-align: center;
+}
+
+.app-track-cover {
+    width: 40px;
+    height: 40px;
+    border-radius: 4px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.app-track-title-text {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.app-track-name {
+    font-size: 15px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.app-track-artist {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}

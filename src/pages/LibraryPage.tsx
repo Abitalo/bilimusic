@@ -1,16 +1,35 @@
 import { NavLink } from 'react-router-dom'
 import { Library as LibraryIcon, PlusCircle, ListMusic } from 'lucide-react'
+import { useDialog } from '../hooks/useDialog'
+import PageState from '../components/PageState'
 import { useAppStore } from '../hooks/useAppStore'
 import './LibraryPage.css'
 
 export default function LibraryPage() {
-    const { playlists, createPlaylist } = useAppStore()
+    const { playlists, createPlaylist, isHydrated } = useAppStore()
+    const { prompt } = useDialog()
 
-    const handleCreate = () => {
-        const title = prompt('请输入新播放列表名称：')
-        if (title && title.trim()) {
-            createPlaylist(title.trim())
+    const handleCreate = async () => {
+        const title = await prompt({
+            title: '新建播放列表',
+            description: '给这个播放列表起一个名字，之后你可以继续往里面添加歌曲。',
+            confirmText: '创建',
+            cancelText: '取消',
+            placeholder: '例如：深夜循环',
+            inputLabel: '播放列表名称',
+            validate: (value) => value ? undefined : '请输入播放列表名称。',
+        })
+        if (title) {
+            await createPlaylist(title)
         }
+    }
+
+    if (!isHydrated) {
+        return (
+            <div className="library-page">
+                <PageState title="正在加载收藏库..." compact />
+            </div>
+        )
     }
 
     return (
@@ -27,11 +46,11 @@ export default function LibraryPage() {
             </div>
 
             {playlists.length === 0 ? (
-                <div className="empty-state">
-                    <span className="empty-icon"><ListMusic size={64} /></span>
-                    <h3>暂无播放列表</h3>
-                    <p>点击右上角或侧边栏创建你的第一个播放列表</p>
-                </div>
+                <PageState
+                    title="暂无播放列表"
+                    description="点击右上角或侧边栏，创建你的第一个播放列表。"
+                    icon={<ListMusic size={64} />}
+                />
             ) : (
                 <div className="playlist-grid">
                     {playlists.map(pl => (
