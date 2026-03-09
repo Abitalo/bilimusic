@@ -42,4 +42,9 @@ export function saveHistory(history: Track[]) {
     store.set('history', history)
 }
 
+export function clearAppState() {
+    store.delete('playlists')
+    store.delete('history')
+}
+
 export default store

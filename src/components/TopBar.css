@@ -7,7 +7,9 @@
     padding: 0 24px;
     z-index: 50;
     gap: 16px;
-    background: var(--bg-base);
+    background: var(--bg-topbar);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
 }
 
 .topbar-left {
@@ -38,8 +40,8 @@
 .search-input {
     width: 100%;
     padding: 10px 40px 10px 40px;
-    background: #242424;
-    border: 1px solid transparent;
+    background: var(--bg-hover);
+    border: 1px solid var(--border-subtle);
     border-radius: 24px;
     color: var(--text-primary);
     font-size: 13px;
@@ -52,8 +54,9 @@
 }
 
 .search-input:focus {
-    background: #2a2a2a;
-    border-color: rgba(255, 255, 255, 0.2);
+    background: var(--bg-surface);
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 2px rgba(251, 114, 153, 0.1);
 }
 
 .search-clear {
@@ -136,4 +139,56 @@
 .user-avatar:hover {
     border-color: var(--accent-primary);
     transform: scale(1.05);
+}
+
+.settings-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.settings-dropdown {
+    position: absolute;
+    top: 48px;
+    right: 0;
+    width: 200px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-subtle);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    display: flex;
+    flex-direction: column;
+    padding: 8px 0;
+    z-index: 100;
+}
+
+[data-theme='light'] .settings-dropdown {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+}
+
+.settings-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    background: transparent;
+    border: none;
+    color: var(--text-primary);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-align: left;
+    width: 100%;
+}
+
+.settings-item:hover {
+    background: var(--bg-hover);
+}
+
+.settings-item.danger {
+    color: #ff4d4f;
+}
+
+.settings-item.danger:hover {
+    background: rgba(255, 77, 79, 0.1);
 }

@@ -12,6 +12,9 @@ const bridgeApi: BiliMusicApi = {
     saveHistory(history: Track[]) {
         return ipcRenderer.invoke('app:save-history', history)
     },
+    clearAppData() {
+        return ipcRenderer.invoke('app:clear-data')
+    },
     searchVideos(keyword: string, page = 1) {
         return ipcRenderer.invoke('bili:search-videos', keyword, page)
     },

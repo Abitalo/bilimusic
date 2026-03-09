@@ -5,6 +5,10 @@
   --bg-elevated: #282828;
   --bg-hover: #2a2a2a;
 
+  --bg-sidebar: #000000;
+  --bg-topbar: #000000;
+  --bg-player: #181818;
+
   --text-primary: #ffffff;
   --text-secondary: #b3b3b3;
   --text-tertiary: #a7a7a7;
@@ -26,6 +30,28 @@
   /* Effects */
   --transition-fast: 0.1s ease;
   --transition-normal: 0.2s ease;
+}
+
+[data-theme='light'] {
+  --bg-base: #f9f9fb;
+  --bg-surface: #ffffff;
+  --bg-elevated: #ffffff;
+  --bg-hover: #f1f2f5;
+
+  /* Apple Music inspired soft panels */
+  --bg-sidebar: #f0f1f5;
+  --bg-topbar: rgba(249, 249, 251, 0.85);
+  --bg-player: rgba(255, 255, 255, 0.9);
+
+  --text-primary: #1d1d1f;
+  --text-secondary: #86868b;
+  --text-tertiary: #a1a1a6;
+  --border-subtle: rgba(0, 0, 0, 0.06);
+
+  --accent-green: #1db954;
+  --accent-green-hover: #1ed760;
+  --accent-primary: #FB7299;
+  --accent-hover: #fc8bab;
 }
 
 * {
@@ -70,7 +96,11 @@ body {
 /* Fallback for legacy classes until removed in Phase 5 */
 .glass-panel {
   background: var(--bg-surface);
-  border-bottom: 1px solid var(--bg-elevated);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+[data-theme='light'] .glass-panel {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 }
 
 /* App Layout */

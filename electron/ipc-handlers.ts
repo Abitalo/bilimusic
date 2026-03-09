@@ -1,7 +1,7 @@
 import { ipcMain } from 'electron'
 import type { Playlist, Track } from '../shared/models'
 import { getLoginUrl, getPageList, getPlayUrl, getRecommendFeed, getUserInfo, getVideoDetail, logout, pollLogin, searchBilibili } from './bilibili-api'
-import { loadAppState, saveHistory, savePlaylists } from './store'
+import { clearAppState, loadAppState, saveHistory, savePlaylists } from './store'
 
 function toErrorResponse(error: unknown) {
     return {
@@ -31,6 +31,16 @@ export function setupIpcHandlers() {
             return true
         } catch (error) {
             console.error('SaveHistory error:', error)
+            return false
+        }
+    })
+
+    ipcMain.handle('app:clear-data', () => {
+        try {
+            clearAppState()
+            return true
+        } catch (error) {
+            console.error('ClearData error:', error)
             return false
         }
     })

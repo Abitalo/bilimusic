@@ -44,6 +44,7 @@ export function normalizeCoverUrl(url: string) {
 
 export function createTrack(seed: TrackSeed): Track {
     return {
+        id: `trk_${seed.bvid}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`,
         ...seed,
         addedAt: seed.addedAt ?? Date.now(),
     }

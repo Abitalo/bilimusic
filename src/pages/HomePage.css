@@ -26,18 +26,29 @@
 }
 
 .feed-card {
-    background: #181818;
+    background: var(--bg-surface);
     padding: 16px;
     border-radius: 8px;
     cursor: pointer;
-    transition: background-color var(--transition-normal);
+    transition: all var(--transition-normal);
     position: relative;
     display: flex;
     flex-direction: column;
+    border: 1px solid transparent;
+}
+
+[data-theme='light'] .feed-card {
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+    border: 1px solid rgba(0, 0, 0, 0.02);
 }
 
 .feed-card:hover {
-    background: #282828;
+    background: var(--bg-hover);
+}
+
+[data-theme='light'] .feed-card:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
 }
 
 .feed-cover-container {

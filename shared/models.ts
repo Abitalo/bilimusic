@@ -1,6 +1,7 @@
 export const LIKED_PLAYLIST_ID = 'liked'
 
 export interface Track {
+    id: string
     bvid: string
     cid?: number
     title: string
@@ -62,6 +63,9 @@ export interface BiliPlayUrlResponse {
 
 export interface BiliVideoPage {
     cid: number
+    page?: number
+    part?: string
+    duration?: number
 }
 
 export interface BiliVideoDetailResponse {

@@ -1,4 +1,4 @@
-import type { BiliPageListResponse, BiliPlayUrlResponse, BiliVideoDetailResponse, Track } from '../types'
+import type { BiliPlayUrlResponse, Track } from '../types'
 import { getRendererApi } from '../utils/ipc'
 
 const AUDIO_PROXY_PORT = 48261
@@ -7,14 +7,6 @@ const audioUrlCache = new Map<string, string>()
 
 function getAudioCacheKey(track: Track) {
     return `${track.bvid}:${track.cid}`
-}
-
-function extractCidFromDetail(response: BiliVideoDetailResponse) {
-    return response.data?.cid ?? response.data?.pages?.[0]?.cid
-}
-
-function extractCidFromPageList(response: BiliPageListResponse) {
-    return response.data?.[0]?.cid
 }
 
 function extractAudioUrl(response: BiliPlayUrlResponse) {
@@ -26,43 +18,60 @@ function toProxyUrl(audioUrl: string) {
     return `http://127.0.0.1:${AUDIO_PROXY_PORT}/?url=${encodeURIComponent(audioUrl)}`
 }
 
-export async function ensureTrackCid(track: Track): Promise<Track> {
+interface EnsuredTrackMeta {
+    track: Track
+    additionalTracks?: Track[]
+}
+
+export async function ensureTrackCid(track: Track): Promise<EnsuredTrackMeta> {
     if (track.cid) {
         cidCache.set(track.bvid, track.cid)
-        return track
-    }
-
-    const cachedCid = cidCache.get(track.bvid)
-    if (cachedCid) {
-        return { ...track, cid: cachedCid }
+        return { track }
     }
 
     const api = getRendererApi()
     const detailResponse = await api.getVideoDetail(track.bvid)
-    const detailCid = detailResponse.code === 0 && 'data' in detailResponse
-        ? extractCidFromDetail(detailResponse)
-        : undefined
+    let pages = ('data' in detailResponse) ? detailResponse.data?.pages : undefined
 
-    if (detailCid) {
-        cidCache.set(track.bvid, detailCid)
-        return { ...track, cid: detailCid }
+    if (!pages || pages.length === 0) {
+        const pageListResponse = await api.getPageList(track.bvid)
+        pages = ('data' in pageListResponse) ? pageListResponse.data : undefined
     }
 
-    const pageListResponse = await api.getPageList(track.bvid)
-    const pageListCid = pageListResponse.code === 0 && 'data' in pageListResponse
-        ? extractCidFromPageList(pageListResponse)
-        : undefined
-
-    if (!pageListCid) {
+    if (!pages || pages.length === 0) {
         throw new Error('播放失败：无法解析该内容的音频轨道。')
     }
 
-    cidCache.set(track.bvid, pageListCid)
-    return { ...track, cid: pageListCid }
+    const detailCid = pages[0].cid
+    cidCache.set(track.bvid, detailCid)
+    const playableTrack = { ...track, cid: detailCid }
+
+    if (pages.length > 1) {
+        playableTrack.title = `${track.title} (P${pages[0].page || 1} ${pages[0].part || ''})`
+        if (pages[0].duration) {
+            playableTrack.duration = pages[0].duration
+        }
+    }
+
+    const additionalTracks: Track[] = []
+    if (pages.length > 1) {
+        for (let i = 1; i < pages.length; i++) {
+            const p = pages[i]
+            additionalTracks.push({
+                ...track,
+                id: `${track.id}_p${p.page || i + 1}`,
+                cid: p.cid,
+                title: `${track.title} (P${p.page || i + 1} ${p.part || ''})`,
+                duration: p.duration || track.duration
+            })
+        }
+    }
+
+    return { track: playableTrack, additionalTracks }
 }
 
 export async function resolvePlaybackSource(track: Track) {
-    const playableTrack = await ensureTrackCid(track)
+    const { track: playableTrack, additionalTracks } = await ensureTrackCid(track)
     const cacheKey = getAudioCacheKey(playableTrack)
     const cachedAudioUrl = audioUrlCache.get(cacheKey)
 
@@ -70,6 +79,7 @@ export async function resolvePlaybackSource(track: Track) {
         return {
             track: playableTrack,
             src: toProxyUrl(cachedAudioUrl),
+            additionalTracks
         }
     }
 
@@ -88,5 +98,6 @@ export async function resolvePlaybackSource(track: Track) {
     return {
         track: playableTrack,
         src: toProxyUrl(audioUrl),
+        additionalTracks
     }
 }

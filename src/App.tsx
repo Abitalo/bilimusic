@@ -33,11 +33,27 @@ function App() {
       const audioElement = audioRef.current
       if (!audioElement) return
 
-      const { track: playableTrack, src } = await resolvePlaybackSource(track)
+      const { track: playableTrack, src, additionalTracks } = await resolvePlaybackSource(track)
       audioElement.pause()
       audioElement.src = src
       audioElement.currentTime = 0
       setCurrentTrack(playableTrack)
+
+      // Replace generic track in queue with the loaded P1 (which includes cid) and insert remaining pages
+      setQueueIndex(currentIndex => {
+        setQueue(prevQueue => {
+          const newQueue = [...prevQueue]
+          if (currentIndex >= 0 && currentIndex < prevQueue.length && prevQueue[currentIndex].bvid === playableTrack.bvid) {
+            newQueue[currentIndex] = playableTrack
+            if (additionalTracks && additionalTracks.length > 0) {
+              newQueue.splice(currentIndex + 1, 0, ...additionalTracks)
+            }
+          }
+          return newQueue
+        })
+        return currentIndex
+      })
+
       await audioElement.play()
       await addToHistory(playableTrack)
     } catch (err) {

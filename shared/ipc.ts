@@ -18,6 +18,7 @@ export interface BiliMusicApi {
     loadAppState(): Promise<AppStateSnapshot>
     savePlaylists(playlists: Playlist[]): Promise<boolean>
     saveHistory(history: Track[]): Promise<boolean>
+    clearAppData(): Promise<boolean>
     searchVideos(keyword: string, page?: number): Promise<BiliSearchResponse | ApiFailure>
     getPlayUrl(bvid: string, cid: number): Promise<BiliPlayUrlResponse | ApiFailure>
     getVideoDetail(bvid: string): Promise<BiliVideoDetailResponse | ApiFailure>

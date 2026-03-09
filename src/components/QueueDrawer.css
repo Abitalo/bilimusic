@@ -14,11 +14,10 @@
 
 .queue-drawer {
     width: 400px;
-    max-width: 100%;
     max-height: 70vh;
     background: var(--bg-surface);
     border-radius: 12px 12px 0 0;
-    border: 1px solid var(--bg-elevated);
+    border: 1px solid var(--border-subtle);
     border-bottom: none;
     margin-left: auto;
     /* align right */
@@ -54,7 +53,7 @@
     justify-content: space-between;
     align-items: center;
     padding: 16px 20px;
-    border-bottom: 1px solid var(--bg-elevated);
+    border-bottom: 1px solid var(--border-subtle);
 }
 
 .queue-header h3 {

@@ -7,8 +7,10 @@
     z-index: 200;
     display: flex;
     flex-direction: column;
-    background: var(--bg-surface);
-    border-top: 1px solid var(--bg-elevated);
+    background: var(--bg-player);
+    border-top: 1px solid var(--border-subtle);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
 }
 
 /* Progress Bar at Top Edge */
@@ -88,7 +90,8 @@
     height: 56px;
     border-radius: 4px;
     object-fit: cover;
-    background: #282828;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border-subtle);
 }
 
 .player-track-text {
@@ -169,8 +172,8 @@
     width: 32px;
     height: 32px;
     border-radius: 50%;
-    background: #fff;
-    color: #000;
+    background: var(--text-primary);
+    color: var(--bg-base);
     border: none;
     display: flex;
     align-items: center;
@@ -185,7 +188,7 @@
 
 .play-btn:active {
     transform: scale(1);
-    background: #e6e6e6;
+    opacity: 0.8;
 }
 
 .time-display-wrapper {
